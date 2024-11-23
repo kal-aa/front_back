@@ -19,7 +19,7 @@ route.post("/insert-client", insertClient);
 //  fb/insert-address
 route.post("/insert-address", insertAddress);
 
-//  fb/insert-orders
+//  fb/insert-order
 route.post("/insert-order", insertOrder);
 
 //  fb/select-client

@@ -7,51 +7,86 @@ const db = mysql.createConnection({
   database: "Front_Back",
 });
 
-//  POST
+//  POST >>
 //  INSERT INTO
 //  /fb/insert-client
 export const insertClient = (req, res, next) => {
   const sql = "INSERT INTO clients SET ?";
-  const values = {
-    first_name: req.body.first_name,
-    last_name: req.body.last_name,
-    gender: req.body.gender,
-    age: req.body.age,
-  };
+  const gender = req.body.gender || null;
+  const age = req.body.age || null;
+  if (!req.body.full_name) {
+    console.log("Please enter full_name, gender, and age for the client");
+    return res
+      .status(400)
+      .send("Please enter full_name, gender, and age for the client");
+  }
+  const fullName = req.body.full_name.trim().split(" ");
+  if (fullName.length !== 2) {
+    console.log("Please add your full name");
+    return res.status(400).send("Please provide both first name and last name");
+  }
 
+  const values = {
+    first_name: fullName[0],
+    last_name: fullName[1],
+    gender,
+    age,
+  };
   db.query(sql, values, (err, result) => {
-    if (err) throw err;
+    if (err) {
+      console.error("Error fetching client:", err);
+      return res.status(500).send("Internal Server Error");
+    }
     console.log(result);
     res.send("Data inserted successfully!");
   });
 };
 
-//  POST
+//  POST >>
 //  INSERT INTO
 //   /fb/insert-address
 export const insertAddress = (req, res, next) => {
-  bcrypt.hash(req.body.password, 10, (err, hash) => {
-    if (err) throw err;
-    console.log("Hashed password:", hash);
-    const hashedPassword = hash;
+  if (!req.body.password || !req.body.email || !req.body.full_name) {
+    console.log("Please add email, password and full_name");
+    return res.status(400).send("Please add email, password and full_name");
+  }
+  const idSql = `SELECT id FROM clients WHERE first_name = ? AND last_name = ?`;
+  const addressSql = `INSERT INTO addresses (email, password, client_id) VALUES (?, ?, ?)`;
 
-    const idSql = `SELECT id FROM clients WHERE first_name = ?`;
-    const addressSql = `
-      INSERT INTO addresses (email, password, client_id) 
-      VALUES (?, ?, ?)
-    `;
+  const email = req.body.email;
+  const password = req.body.password;
+  const fullName = req.body.full_name.trim().split(" ");
+  if (fullName.length !== 2) {
+    console.log("Please add your full name");
+    return res.status(400).send("Please provide both first name and last name");
+  }
 
-    db.query(idSql, [req.body.first_name], (err, result) => {
-      if (err) throw err;
+  db.query(idSql, fullName, (err, result) => {
+    if (err) {
+      console.error("Error fetching client:", err);
+      return res.status(500).send("Internal Server Error");
+    }
+    const client_id = result[0]?.id;
+    if (!client_id) {
+      console.log(
+        `No client found with the name: ${fullName[0]} ${fullName[1]}`
+      );
+      return res.status(404).send(`NOT found`);
+    }
 
-      const client_id = result[0]?.id;
-      if (!client_id) {
-        return res.status(404).send(`NOT found`);
+    bcrypt.hash(password, 10, (err, hash) => {
+      if (err) {
+        console.error("Error comparing password:", err);
+        return res.status(500).send("Internal Server Error");
       }
 
-      const values = [req.body.email, hashedPassword, client_id];
+      const hashedPassword = hash;
+      const values = [email, hashedPassword, client_id];
       db.query(addressSql, values, (err, result) => {
-        if (err) throw err;
+        if (err) {
+          console.error("Error fetching client:", err);
+          return res.status(500).send("Internal Server Error");
+        }
         console.log(result);
         res.send("Great You've got the hang of it!");
       });
@@ -59,177 +94,258 @@ export const insertAddress = (req, res, next) => {
   });
 };
 
-//  POST
+//  POST >>
 //  INSERT INTO
 //   /fb/insert-order
 export const insertOrder = (req, res, next) => {
-  const getClientSql = `SELECT id FROM clients WHERE first_name = ?`;
-  const getAddressSql = `SELECT address_id FROM addresses WHERE client_id = ? LIMIT 1`;
-  const insertOrderSql = `INSERT INTO orders (order_name, quantity, client_id, address_id) VALUES (?, ?, ?, ?)`;
-
-  db.query(getClientSql, [req.body.first_name], (err, clientResult) => {
+  if (!req.body.password || !req.body.order_name || !req.body.quantity) {
+    console.log("Please insert your password, order_name, and quantity");
+    return res
+      .status(400)
+      .send("Please insert your password, order_name, and quantity");
+  }
+  const orderName = req.body.order_name;
+  const quantity = req.body.quantity;
+  const password = req.body.password;
+  const getAddressesSql = `SELECT * FROM addresses`;
+  const orderSql = `INSERT INTO orders SET order_name = ?, quantity = ?, client_id = ?, address_id = ?`;
+  db.query(getAddressesSql, (err, addressesResult) => {
     if (err) {
-      console.log("Error fetching client ID:", err);
-      return res.status(500).send("Error processing request");
+      console.error("Error fetching client:", err);
+      return res.status(500).send("Internal Server Error");
     }
 
-    const clientId = clientResult[0]?.id;
-    if (!clientId) {
-      return res.status(400).send("client Not found");
-    }
+    const comparePasswords = async (addressesResultArray, inputPassword) => {
+      for (const each of addressesResultArray) {
+        const isMatch = await bcrypt.compare(inputPassword, each.password);
+        if (isMatch) {
+          console.log("Matched");
+          const client_id = each.client_id;
+          const address_id = each.address_id;
+          const values = [orderName, quantity, client_id, address_id];
 
-    db.query(getAddressSql, [clientId], (err, addressResult) => {
-      if (err) {
-        console.log("Error fetching address ID:", err);
-        return res.status(500).send("Error processing request");
-      }
+          db.query(orderSql, values, (err, orderResult) => {
+            if (err) {
+              console.error("Error fetching client:", err);
+              return res.status(500).send("Internal Server Error");
+            }
 
-      const addressId = addressResult[0]?.address_id;
-      if (!addressId) {
-        return res.status(400).send("Please fill the Address form first!");
-      }
-
-      const values = [
-        req.body.order_name,
-        req.body.quantity,
-        clientId,
-        addressId,
-      ];
-      db.query(insertOrderSql, values, (err, result) => {
-        if (err) {
-          console.log("Error inserting order:", err);
-          return res.status(500).send("Error creating order");
+            console.log(orderResult);
+          });
+          return res.send("order added successfully!");
         }
-        console.log(result);
-        res.send("Order created successfully");
-      });
-    });
+      }
+      console.log("Password doesn't match or the client doesn't exist");
+    };
+    comparePasswords(addressesResult, password);
   });
 };
 
-//  READ
+//  READ >>
 //  SELECT *
 //  fb/select-client
 export const selectClient = (req, res, next) => {
+  if (!req.query.full_name) {
+    console.log("Please insert your full name");
+    return res.status(400).send("Please insert your full name");
+  }
+  const fullName = req.query.full_name.trim().split(" ");
+  if (fullName.length !== 2) {
+    console.log("Please add your full name");
+    return res.status(400).send("Please provide both first name and last name");
+  }
+
   let sql;
   let values;
-  if (req.body.column) {
-    sql = `SELECT ?? FROM clients WHERE first_name = ?`;
-    values = [req.body.column, req.body.first_name];
+  if (req.query.column) {
+    const column = req.query.column.trim().split(", ");
+    sql = `SELECT ${column
+      .map((each) => "??")
+      .join(", ")} FROM clients WHERE first_name = ? AND last_name = ?`;
+    values = [...column, fullName[0], fullName[1]];
   } else {
-    sql = `SELECT * FROM clients WHERE first_name = ?`;
-    values = [req.body.first_name];
+    sql = `SELECT * FROM clients WHERE first_name = ? AND last_name = ?`;
+    values = [fullName[0], fullName[1]];
   }
 
   db.query(sql, values, (err, result) => {
-    if (err) throw err;
-
+    if (err) {
+      console.error("Error fetching client:", err);
+      return res.status(500).send("Internal Server Error");
+    }
     if (result.length === 0) {
+      console.error("No client Found");
       return res.status(400).send("Make sure The name is Valid");
     }
     const row = result[0];
-    const full_name = `${row.first_name} ${row.last_name}`;
+    const fullName = `${row.first_name} ${row.last_name}`;
     const gender = row.gender || "Unset";
     const age = row.age || "Unset";
 
-    const newResult = { full_name, age, gender };
-    console.log(newResult);
+    const newResult = { fullName, age, gender };
+
+    console.log(result);
     res.send(newResult);
   });
 };
 
-//  READ
+//  READ >>
 //  SELECT *
 //  fb/select-address
 export const selectAddress = (req, res, next) => {
-  const idSql = `SELECT id FROM clients WHERE first_name = ?;`;
-  const addressSql = `
-    SELECT * FROM addresses WHERE client_id = ? LIMIT 1;`;
-  const first_name = req.body.first_name;
+  if (!req.query.full_name || !req.query.password) {
+    console.log("Please insert your full name and password");
+    return res.status(400).send("Please insert your full name and password");
+  }
+  const fullName = req.query.full_name.trim().split(" ");
+  if (fullName.length !== 2) {
+    console.log("Please add your full name");
+    return res.status(400).send("Please provide both first name and last name");
+  }
 
-  db.query(idSql, [first_name], (err, idResult) => {
-    if (err) throw err;
+  const inputPassword = req.query.password;
+  const idSql = `SELECT id FROM clients WHERE first_name = ? AND last_name = ?;`;
+  const addressSql = `SELECT * FROM addresses WHERE client_id = ?`;
 
+  db.query(idSql, [fullName[0], fullName[1]], (err, idResult) => {
+    if (err) {
+      console.error("Error fetching client:", err);
+      return res.status(500).send("Internal Server Error");
+    }
     const id = idResult[0]?.id;
     if (!id) {
+      console.error("No client found");
       return res
         .status(404)
-        .send(`Oops! NO client with the name "${first_name}"`);
+        .send(
+          `Oops! NO client found with the name "${fullName[0]} ${fullName[1]}"`
+        );
     }
 
     db.query(addressSql, [id], (err, addressResult) => {
-      if (err) throw err;
-
-      if (!addressResult.length) {
+      if (err) {
+        console.error("Error fetching client:", err);
+        return res.status(500).send("Internal Server Error");
+      }
+      if (addressResult.length === 0) {
+        console.error("No address found");
         return res
           .status(404)
-          .send(`Oops! No address found with the name "${first_name}"`);
+          .send(
+            `Oops! No address found with the name "${fullName[0]} ${fullName[1]}"`
+          );
       }
 
-      const password = addressResult[0].password;
-      bcrypt.compare(req.body.password, password, (err, result) => {
-        if (err) throw err;
+      const sqlPassword = addressResult[0].password;
+      bcrypt.compare(inputPassword, sqlPassword, (err, result) => {
+        if (err) {
+          console.error("Error comparing password:", err);
+          return res.status(500).send("Internal Server Error");
+        }
         if (!result) {
-          console.log("Password Doesn't match");
+          console.error("Password Doesn't match");
           return res.status(401).send("Incorrect password");
         }
 
         console.log("Password Match!");
         const email = addressResult[0].email;
-        const emailPassword = req.body.password;
+        const emailPassword = inputPassword;
         const newResult = { email, emailPassword };
 
+        console.log(addressResult);
         res.send(newResult);
       });
     });
   });
 };
 
-//  READ
+//  READ >>
 //  SELECT *
 //  fb/select-order
 export const selectOrder = (req, res, next) => {
-  if (!req.body.full_name) {
+  if (!req.query.full_name) {
     console.log("Add your full name");
-    return;
+    return res.status(400).send("Add your full name");
   }
-  const fullName = req.body.full_name.trim().split(" ");
+  const idSql = `SELECT id FROM clients WHERE first_name = ? AND last_name = ?;`;
+  const addressSql = `SElECT * FROM addresses WHERE client_id = ?`;
+  const orderSql = `SELECT * FROM orders WHERE client_id = ?`;
 
+  const fullName = req.query.full_name.trim().split(" ");
   if (fullName.length !== 2) {
+    console.log("Please add your full name, like:John Doe");
     return res.status(400).send("Please provide both first name and last name");
   }
 
-  const idSql = `SELECT id FROM clients WHERE first_name = ? AND last_name = ?;`;
-  const orderSql = `SELECT * FROM orders WHERE client_id = ?`;
-
   db.query(idSql, fullName, (err, idResult) => {
-    if (err) throw err;
+    if (err) {
+      console.error("Error fetching client:", err);
+      return res.status(500).send("Internal Server Error");
+    }
     if (idResult.length === 0) {
-      console.log("No such data");
-      return res.status(404).send("Client not found");
+      console.log(
+        "user trying to fetch an order with a client name that doesn't exist"
+      );
+      return res
+        .status(404)
+        .send(
+          "Oops!, No client found with the name:" +
+            "'" +
+            fullName[0] +
+            " " +
+            fullName[1] +
+            "'"
+        );
     }
 
     const id = idResult[0]?.id;
-    db.query(orderSql, [id], (err, result) => {
-      if (err) throw err;
 
-      const order = result[0].order_name;
-      const quantity = result[0].quantity;
-      const newResult = { order, quantity };
-      res.send(newResult);
+    db.query(addressSql, [id], (err, addressResult) => {
+      if (err) {
+        console.error("Error fetching client:", err);
+        return res.status(500).send("Internal Server Error");
+      }
+      if (addressResult.length === 0) {
+        console.log(
+          "user trying to fetch an order for a client which doesn't have an address"
+        );
+        return res
+          .status(404)
+          .send(
+            "Please fill the Address form and then place an order first to see your orders"
+          );
+      }
+
+      db.query(orderSql, [id], (err, orderResult) => {
+        if (err) {
+          console.error("Error fetching client:", err);
+          return res.status(500).send("Internal Server Error");
+        }
+
+        const order = orderResult[0].order_name;
+        const quantity = orderResult[0].quantity;
+        const newResult = { order, quantity };
+        console.log(orderResult);
+        return res.send(newResult);
+      });
     });
   });
 };
 
-//  READ
-//  SELECT * FROM... JOIN ... JOIN
-//` fb/select-all
+//  READ >>
+//  SELECT *
+//  fb/select-all
 export const selectAll = (req, res, next) => {
-  if (req.body.full_name) {
-    console.log("Add your full name");
-    return;
+  if (!req.query.full_name || !req.query.password) {
+    console.error("no full_name and password added");
+    return res.status(400).send("no full_name and password added");
   }
-  const fullName = req.body.full_name.trim().split(" ");
+  const inputPassword = req.query.password;
+  const fullName = req.query.full_name.trim().split(" ");
+  if (fullName.length !== 2) {
+    console.error("full name length !== 2");
+    return res.status(400).send("Please insert your full name");
+  }
   const sql = `
     SELECT * FROM clients c 
     JOIN addresses a 
@@ -238,25 +354,30 @@ export const selectAll = (req, res, next) => {
       ON c.id = o.client_id
     WHERE first_name = ? AND last_name = ?;`;
 
-  if (fullName.length !== 2) {
-    console.log("Please insert full name");
-    return res.status(400).send("Please insert Full name");
-  }
-
   db.query(sql, fullName, (err, sqlResult) => {
-    if (err) throw err;
+    if (err) {
+      console.error("Error fetching client:", err);
+      return res.status(500).send("Internal Server Error");
+    }
     if (sqlResult.length === 0) {
-      console.log("No such name found");
+      console.error(
+        "can't fetch data from all the 3 tables with the name user gave, since one, two, or three of them are empty"
+      );
       return res
         .status(404)
-        .send(`Oops! incorrect name: ${fullName[0]} ${fullName[1]}`);
+        .send(
+          `Oops! incorrect name: ${fullName[0]} ${fullName[1]}, or doesn't have a full info!`
+        );
     }
 
-    bcrypt.compare(req.body.password, sqlResult[0].password, (err, result) => {
-      if (err) throw err;
-
+    const sqlPassword = sqlResult[0].password;
+    bcrypt.compare(inputPassword, sqlPassword, (err, result) => {
+      if (err) {
+        console.error("Error comparing password:", err);
+        return res.status(500).send("Internal Server Error");
+      }
       if (!result) {
-        console.log("Incorrect Password");
+        console.error("Incorrect Password");
         return res.status(401).send("Please insert a correct password");
       }
 
@@ -267,7 +388,7 @@ export const selectAll = (req, res, next) => {
       const age = row.age || "Unset";
       const gender = row.gender || "Unset";
       const email = row.email;
-      const password = req.body.password;
+      const password = inputPassword;
       const order = `${row.quantity} ${row.order_name}(s)`;
 
       const newResult = {
@@ -279,7 +400,7 @@ export const selectAll = (req, res, next) => {
         order,
       };
 
-      console.log(newResult);
+      console.log(sqlResult);
       res.send(newResult);
     });
   });
@@ -289,48 +410,71 @@ export const selectAll = (req, res, next) => {
 //  UPDATE clients SET...
 //  fb/update-client
 export const updateClient = (req, res, next) => {
-  /* for the frontend add a SELECT * and put the data inside a PUT form */
-  const firstName = req.body.first_name;
-  if (req.body.full_name && req.body.age && req.body.gender && firstName) {
-    const fullName = req.body.full_name.trim().split(" ");
+  /* for the frontend add a SELECT * and put the data inside form making it ready to update */
+
+  if (
+    req.body.newFull_name &&
+    req.body.prevFull_name &&
+    req.body.new_age &&
+    req.body.new_gender
+  ) {
+    const prevFullName = req.body.prevFull_name.trim().split(" ");
+    const age = req.body.new_age;
+    const gender = req.body.newGender;
+    const fullName = req.body.newFull_name.trim().split(" ");
     if (fullName.length !== 2) {
       console.log("Please enter your full name");
       return res.status(400).send('Enter your full name like: "John Doe"');
     }
-    if (isNaN(req.body.age)) {
+    if (isNaN(age)) {
       console.log("The age Must be a number");
       return res.status(400).send("Age must be number");
     }
 
-    const checkSql = `SELECT * FROM clients WHERE first_name = ?`;
-    const value = [firstName];
+    const checkSql = `SELECT * FROM clients WHERE first_name = ? AND last_name = ?`;
+    const checkValues = [prevFullName[0], prevFullName[1]];
 
-    const sql = `UPDATE clients SET first_name = ?, last_name = ?, gender = ?, age = ? WHERE first_name = ?`;
-    const values = [
+    const sql = `UPDATE clients SET first_name = ?, last_name = ?, gender = ?, age = ? WHERE first_name = ? AND last_name = ?`;
+    const updateValues = [
       fullName[0],
       fullName[1],
-      req.body.gender,
-      req.body.age,
-      firstName,
+      gender,
+      age,
+      prevFullName[0],
+      prevFullName[1],
     ];
 
-    db.query(checkSql, value, (err, result) => {
-      if (err) throw err;
+    db.query(checkSql, checkValues, (err, result) => {
+      if (err) {
+        console.error("Error fetching client:", err);
+        return res.status(500).send("Internal Server Error");
+      }
       if (result.length === 0) {
         console.log("Put a valid name");
-        return res.status(404).send(`No data with the name ${fullName[0]}`);
+        return res
+          .status(404)
+          .send(`No data with the name ${prevFullName[0]} ${prevFullName[1]}`);
       }
 
-      db.query(sql, values, (err, result) => {
-        if (err) throw err;
+      db.query(sql, updateValues, (err, result) => {
+        if (err) {
+          console.error("Error fetching client:", err);
+          return res.status(500).send("Internal Server Error");
+        }
 
         console.log("Updated successfully");
         return res.send("Updated");
       });
     });
   } else {
-    console.log("Please include age, gender and full_name");
-    return;
+    console.log(
+      "PrevFull_name new_age, new_gender and newFull_name not filled"
+    );
+    return res
+      .status(400)
+      .send(
+        "Please add your previous full name and the new age, gender and full name"
+      );
   }
 };
 
@@ -338,35 +482,48 @@ export const updateClient = (req, res, next) => {
 //  UPDATE addresses SET...
 //  fb/update-address
 export const updateAddress = (req, res, next) => {
-  const firstName = req.body.first_name;
+  if (
+    !req.body.new.email ||
+    !req.body.new_password ||
+    !req.body.prev_password ||
+    !req.body.full_ame
+  ) {
+    console.log("Add full_name, prev_password, new_password, new_email");
+    return res.status(400).send("Add all info");
+  }
+  const fullName = req.body.full_name.trim().split(" ");
   const prevPassword = req.body.prev_password;
   const newPassword = req.body.new_password;
   const newEmail = req.body.new_email;
-  if (!newEmail || !newPassword || !prevPassword || !firstName) {
-    console.log("Add first_name, prev_password, new_password, new_email");
-    return res.status(400).send("Add all info");
-  }
-  const idSql = `SELECT id FROM clients WHERE first_name = ?`;
+  const idSql = `SELECT id FROM clients WHERE first_name = ? AND last_name = ?;`;
   const checkAddress = `SELECT * FROM addresses WHERE client_id = ?`;
   const addressSql = `UPDATE addresses SET email = ?, password = ? WHERE client_id = ?`;
 
   //  check if the client exists
-  db.query(idSql, [firstName], (err, idResult) => {
-    if (err) throw err;
+  db.query(idSql, fullName, (err, idResult) => {
+    if (err) {
+      console.error("Error fetching client:", err);
+      return res.status(500).send("Internal Server Error");
+    }
     const id = idResult[0]?.id;
     if (!id) {
-      console.log("No data found");
-      return res.status(404).send(`Data with a name: "${firstName}" not found`);
+      console.log("No client found, to update the address");
+      return res
+        .status(404)
+        .send(`Client with a name: "${fullName[0]} ${fullName[1]}" not found`);
     }
 
     //  check if the address exists for the client
     db.query(checkAddress, [id], (err, checkResult) => {
-      if (err) throw err;
+      if (err) {
+        console.error("Error fetching client:", err);
+        return res.status(500).send("Internal Server Error");
+      }
       if (checkResult.length === 0) {
-        console.log("No address Found");
+        console.log("No address Found to be updated");
         return res
           .status(404)
-          .send(`No address found related to: ${firstName}`);
+          .send(`No address found related to: "${fullName[0]} ${fullName[1]}"`);
       }
 
       // check if the users id matches with the one in the address
@@ -374,19 +531,28 @@ export const updateAddress = (req, res, next) => {
         prevPassword,
         checkResult[0].password,
         (err, passwordResult) => {
-          if (err) throw err;
+          if (err) {
+            console.error("Error comparing password:", err);
+            return res.status(500).send("Internal Server Error");
+          }
           if (!passwordResult) {
             console.log("password doesn't match");
-            return;
+            return res.status(401).send("password doesn't match");
           } else {
             // Generate a new hashed password for the new email
             bcrypt.hash(newPassword, 10, (err, hashedPassword) => {
-              if (err) throw err;
+              if (err) {
+                console.error("Error hashing password:", err);
+                return res.status(500).send("Internal Server Error");
+              }
 
               // finally update the address with the new email and hashed password
               const values = [newEmail, hashedPassword, id];
               db.query(addressSql, values, (err, result) => {
-                if (err) throw err;
+                if (err) {
+                  console.error("Error fetching client:", err);
+                  return res.status(500).send("Internal Server Error");
+                }
 
                 console.log("Done");
                 res.send("Glad to done this");
@@ -403,41 +569,99 @@ export const updateAddress = (req, res, next) => {
 //  DELETE client FROM...
 //  fb/delete-client
 export const deleteClient = (req, res, next) => {
-  if (!req.query.fullName) {
-    console.log("Add your full name");
-    return res.status(400).send("Please insert your full name");
+  if (!req.query.password || !req.query.full_name) {
+    console.log("Add your password and full name");
+    return res.status(400).send("Please insert your password");
   }
-  const fullName = req.query.fullName.trim().split(" ");
+  const inputPassword = req.query.password;
+  const fullName = req.query.full_name.trim().split(" ");
+  if (fullName.length !== 2) {
+    console.log("Add your full name, like: 'John Doe' to be deleted");
+    return res.status(400).send("Add your full name, like: 'John Doe'");
+  }
+  const clientSql = `SELECT id FROM clients WHERE first_name = ? AND  last_name = ?`;
+  const deleteClientSql = `DELETE FROM clients WHERE id = ?`;
+  const addressSql = `SELECT * FROM addresses WHERE client_id = ?`;
+  const deleteAddressSql = `DELETE FROM addresses WHERE client_id = ?`;
+  const orderSql = `SELECT * FROM orders WHERE client_id = ?`;
+  const deleteOrderSql = `DELETE FROM orders WHERE client_id = ?`;
 
-  const checkId = `SELECT password FROM clients WHERE first_name = ? AND last_name = ?`;
-  const orderSql = `DELETE FROM orders WHERE client_id = ?`;
-  const addressSql = `DELETE FROM addresses WHERE client_id = ?`;
-  const clientSql = `DELETE FROM clients WHERE id = ?`;
-
-  db.query(checkId, fullName, (err, idResult) => {
-    if (err) throw err;
-    const id = idResult[0]?.id;
+  // first fetch the client id from clients table
+  db.query(clientSql, fullName, (err, clientResult) => {
+    if (err) {
+      console.error("Error fetching client:", err);
+      return res.status(500).send("Internal Server Error");
+    }
+    const id = clientResult[0]?.id;
     if (!id) {
-      console.log("no client found to delete");
+      console.log("The client to be deleted was not found");
+      return res.status(404).send("The client name you entered was not found!");
     }
 
-    /* Ask the user if he/she wants to remove all the child row */
-
-    // Delete the child order, first if exists
+    //  check if the client has an order
     db.query(orderSql, [id], (err, orderResult) => {
-      if (err) throw err;
-      console.log(orderResult);
-    });
+      if (err) {
+        console.error("Error fetching client:", err);
+        return res.status(500).send("Internal Server Error");
+      }
+      if (orderResult.length === 0) {
+        console.log("The client has no order to be deleted");
+        return;
+      }
 
-    // Delete the child order, first if exists
-    db.query(addressSql, [id], (err, addressResult) => {
-      if (err) throw err;
-      console.log(addressResult);
-    });
-    db.query(clientSql, [id], (err, clientResult) => {
-      if (err) throw err;
-      console.log(clientResult);
-      res.send("Deleted successfully");
+      //  Delete the order
+      db.query(deleteOrderSql, [id], (err, deleteOrderResult) => {
+        if (err) {
+          console.error("Error fetching client:", err);
+          return res.status(500).send("Internal Server Error");
+        }
+
+        console.log("Order deleted:", deleteOrderResult);
+
+        // Check if the client has an address
+        db.query(addressSql, [id], (err, addressResult) => {
+          if (err) {
+            console.error("Error fetching client:", err);
+            return res.status(500).send("Internal Server Error");
+          }
+          if (addressResult.length === 0) {
+            console.log("The client has no address to be deleted");
+            return;
+          }
+
+          //  compare the password
+          const sqlPassword = addressResult[0]?.password;
+          bcrypt.compare(inputPassword, sqlPassword, (err, compareResult) => {
+            if (err) {
+              console.error("Error comparing password:", err);
+              return res.status(500).send("Internal Server Error");
+            }
+            if (!compareResult) {
+              console.log("Password doesn't match");
+              return res.status(401).send("Password doesn't match");
+            }
+
+            //  Delete the address
+            db.query(deleteAddressSql, [id], (err, deleteAddressResult) => {
+              if (err) {
+                console.error("Error fetching client:", err);
+                return res.status(500).send("Internal Server Error");
+              }
+              console.log("Address deleted:", deleteAddressResult);
+
+              //  The finally delete the client
+              db.query(deleteClientSql, [id], (err, deleteClientResult) => {
+                if (err) {
+                  console.error("Error fetching client:", err);
+                  return res.status(500).send("Internal Server Error");
+                }
+                console.log("Client deleted:", deleteClientResult);
+                return res.send(`We will miss you ${fullName[0]}`);
+              });
+            });
+          });
+        });
+      });
     });
   });
 };
