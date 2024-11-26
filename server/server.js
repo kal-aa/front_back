@@ -4,22 +4,25 @@ import { fileURLToPath } from "url";
 import route from "./route.js";
 import error from "./middlewares/error.js";
 import notFound from "./middlewares/notFound.js";
+import logger from "./middlewares/logger.js";
 const port = process.env.PORT || 5000;
 
 const app = express();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-console.log(__dirname);
 
+// setup a view engine 'ejs'
 app.set("view engine", "ejs");
 
-//  change ejs's views folder location to the serve 
-app.set("views", path.join(__dirname, 'views'));
+//  change the location of the views folder of 'ejs'
+app.set("views", path.join(__dirname, "views"));
 
 // parse incoming body
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+// logger
+app.use(logger);
 
 app.use("/FB", route);
 

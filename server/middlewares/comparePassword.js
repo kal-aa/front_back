@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 
-function comparePassword(inputPassword, sqlPassword, ifResult, next) {
+function comparePassword(inputPassword, sqlPassword, next, ifResult) {
   bcrypt.compare(inputPassword, sqlPassword, (err, result) => {
     if (err) {
       console.error("Error comparing password:", err);
@@ -12,8 +12,8 @@ function comparePassword(inputPassword, sqlPassword, ifResult, next) {
       err.status = 401;
       return next(err);
     }
-
-    return ifResult();
+    console.log("Authenticated!");
+    ifResult(result);
   });
 }
 

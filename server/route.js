@@ -40,7 +40,7 @@ route.put("/update-client", updateClient);
 //  fb/update-address
 route.put("/update-address", updateAddress);
 
-//  fb/delete-client
-route.delete("/delete-client", deleteClient);
+//  fb/delete-all
+route.delete("/delete-all", deleteClient);
 
 export default route;
