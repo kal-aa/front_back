@@ -1,6 +1,7 @@
 {
   "name": "my-project",
   "version": "1.0.0",
+  "type": "module",
   "scripts": {
     "client": "cd client/my-app && npm start",
     "server": "cd server && nodemon server.js",
