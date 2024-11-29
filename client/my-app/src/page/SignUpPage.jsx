@@ -46,15 +46,12 @@ const SignUpPage = () => {
             `Network response was not ok while Posting an address: ${res.statusText}`
           );
         }
-        //  Check for empty responses
-        if (res.status === 201) {
-          return {};
-        }
+
         return res.json();
       })
-      .then(() => {
+      .then((data) => {
         setIsSending(false);
-        navigate(`/home/${formData.full_name}`);
+        navigate(`/home/${data.client_id}`);
         console.log("Both client and address posts succedded:");
       })
       .catch((error) => {

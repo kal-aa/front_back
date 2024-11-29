@@ -15,7 +15,7 @@ function checkClientSql(fullName, next, ifCheckClientTrue) {
       console.error("No client found");
       return constErr(
         404,
-        `No data found with the name you've given ${fullName[0]} ${fullName[1]}`,
+        `No data found with the name: ${fullName[0]} ${fullName[1]}`,
         next
       );
     }

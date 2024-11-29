@@ -24,9 +24,9 @@ body {
 }
 
 .show-password{
-  @apply absolute bottom-2 right-14 md:right-12
+  @apply absolute bottom-2 right-4 md:right-1
 }
 
 .show-confirm-password {
-  @apply absolute bottom-2 right-14 md:right-12
+  @apply absolute bottom-2 right-4 md:right-1
 }

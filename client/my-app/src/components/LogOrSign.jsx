@@ -10,7 +10,7 @@ const LogOrSign = () => {
       <div className="relative text-center bg-stone-200 px-2 py-5 md:px-5 md:py-8 rounded-2xl">
         <h1 className="text-2xl font-bold">
           Welcome to <span className="text-blue-700">My</span>/
-          <span className="text-yellow-500">Your</span> Website
+          <span className="text-pink-500">Your</span> Website
           <FaSmileWink className="inline ml-1 mb-1" />
         </h1>
         <p className="font-medium md:inline-block">
@@ -28,7 +28,7 @@ const LogOrSign = () => {
         <br />
         <p className="font-medium md:inline-block">No! I have one:</p>
         <NavLink
-          className="bg-yellow-500 px-2 py-3 rounded-xl md:ml-3 hover:bg-yellow-400 inline-block"
+        className=" inline-block bg-pink-500 text-white px-2 py-3 rounded-xl md:ml-3 hover:bg-pink-400"
           to="/log-in"
         >
           Log in

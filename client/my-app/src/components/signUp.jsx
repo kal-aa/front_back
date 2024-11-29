@@ -69,7 +69,7 @@ const SignUp = ({ toSignup }) => {
   };
   return (
     <>
-      <h1 className="text-center text-4xl font-bold mt-5">Sign up</h1>
+      <h1 className="text-center text-blue-500 text-4xl font-bold mt-5">Sign up</h1>
       <div className="flex items-center justify-center">
         <form
           onSubmit={submit}
@@ -111,7 +111,7 @@ const SignUp = ({ toSignup }) => {
             />
           </div>
           <p className="text-xs text-blue-500 -mt-1 ml-1 md:ml-32">
-            note! this email address is valid only in this Website.
+            note! this email address is valid only in this <br/> Website.
           </p>
           <div className="relative">
             <label htmlFor="password">Password: </label>

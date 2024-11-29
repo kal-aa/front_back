@@ -1,4 +1,3 @@
-import bcrypt, { compare, hash } from "bcrypt";
 import createConnection from "../reUses/createConnection.js";
 import comparePassword from "../middlewares/comparePassword.js";
 import constErr from "../middlewares/constErr.js";
@@ -42,7 +41,7 @@ export const insertClient = (req, res, next) => {
       return next(new Error());
     }
     console.log(result);
-    res.status(201).end();
+    res.status(201).send({message: 'kal'});
   });
 };
 
@@ -75,7 +74,7 @@ export const insertAddress = (req, res, next) => {
           return next(new Error());
         }
         console.log(result);
-        res.status(201).end();
+        res.status(201).send({ client_id });
       });
     });
   });
@@ -168,12 +167,13 @@ export const selectClient = (req, res, next) => {
 //  SELECT *
 //  fb/select-address
 export const selectAddress = (req, res, next) => {
-  if (!req.query.full_name || !req.query.password) {
+  const { full_name, password } = req.query;
+  if (!full_name || !password) {
     console.error("Please insert your full name and password");
     return constErr(400, "Please insert your full name and password", next);
   }
-  const inputPassword = req.query.password;
-  const fullName = req.query.full_name.trim().split(" ");
+  const inputPassword = password;
+  const fullName = full_name.trim().split(" ");
   if (fullName.length !== 2) {
     console.error("Please add your full name");
     return constErr(400, "Please provide both first name and last name", next);
@@ -185,12 +185,9 @@ export const selectAddress = (req, res, next) => {
       const sqlPassword = addressResult[0]?.password;
       comparePassword(inputPassword, sqlPassword, next, () => {
         console.log("Password Match!");
-        const email = addressResult[0].email;
-        const emailPassword = inputPassword;
-        const newResult = { email, emailPassword };
 
         console.log(addressResult);
-        res.send(newResult);
+        res.send(addressResult);
       });
     });
   });

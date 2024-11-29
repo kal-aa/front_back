@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import constErr from "./constErr.js";
 
 function comparePassword(inputPassword, sqlPassword, next, ifResult) {
   bcrypt.compare(inputPassword, sqlPassword, (err, result) => {
@@ -8,9 +9,7 @@ function comparePassword(inputPassword, sqlPassword, next, ifResult) {
     }
     if (!result) {
       console.error("Password Doesn't match");
-      const err = new Error("Incorrect password");
-      err.status = 401;
-      return next(err);
+      return constErr(401, "Incorrect password", next);
     }
     console.log("Authenticated!");
     ifResult(result);
