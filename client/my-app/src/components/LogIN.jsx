@@ -15,7 +15,7 @@ const LogIn = ({
   const [showPassword, setShowPassword] = useState(false);
   const [isFullName, setIsFullName] = useState(true);
   const timeoutRef = useRef(null);
-  const buttonStyle = `bg-pink-500 p-1 mt-6 w-56 md:w-80 rounded-xl text-white hover:bg-pink-400 active:bg-pink-600`;
+  const buttonStyle = `bg-pink-500 p-1 w-56 md:w-80 rounded-xl text-white hover:bg-pink-400 active:bg-pink-600`;
 
   const handleChange = (e) => {
     setFormData({
@@ -105,8 +105,8 @@ const LogIn = ({
             )}
           </div>
           <div className="justify-self-center">
-            <p className="max-w-60 text-red-600 leading-tight -mb-3 break-words text-center md:ml-4 md:max-w-72">
-              {badresponseText}
+            <p className="md:ml-4 md:max-w-72 md:px-0 text-red-600 max-w-60 px-4 break-words text-center leading-4 mt-2">
+              {badresponseText || "\u00A0"}
             </p>
             <button type="submit" className={buttonStyle} disabled={isSending}>
               {isSending ? "Submitting..." : "Submit"}

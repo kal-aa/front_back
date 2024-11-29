@@ -16,6 +16,7 @@ const SignUp = ({ toSignup }) => {
   const [passwordconfirmed, setPasswordConfirmed] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [isFullName, setIsFullName] = useState(true);
+  const [badRequestText, setBadRequestText] = useState();
   const timeoutRef = useRef(null);
   const fullNameRef = useRef(null);
 
@@ -65,11 +66,13 @@ const SignUp = ({ toSignup }) => {
     setPasswordConfirmed(true);
     setIsSending(true);
 
-    toSignup(formData, setIsSending);
+    toSignup(formData, setIsSending, setBadRequestText);
   };
   return (
     <>
-      <h1 className="text-center text-blue-500 text-4xl font-bold mt-5">Sign up</h1>
+      <h1 className="text-center text-blue-500 text-4xl font-bold mt-5">
+        Sign up
+      </h1>
       <div className="flex items-center justify-center">
         <form
           onSubmit={submit}
@@ -111,7 +114,7 @@ const SignUp = ({ toSignup }) => {
             />
           </div>
           <p className="text-xs text-blue-500 -mt-1 ml-1 md:ml-32">
-            note! this email address is valid only in this <br/> Website.
+            note! this email address is valid only in this <br /> Website.
           </p>
           <div className="relative">
             <label htmlFor="password">Password: </label>
@@ -193,22 +196,17 @@ const SignUp = ({ toSignup }) => {
               className="signup-input md:ml-6"
             />
           </div>
+          <p className="md:max-w-80 md:px-2 md:pl-5 text-red-600 max-w-60 px-4 break-words text-center leading-4 mt-2 -mb-2">
+            {badRequestText || '\u00A0'}
+          </p>
           <div className="justify-self-center">
-            {isSending ? (
-              <button
-                disabled
-                className="bg-blue-600 p-1 mt-2 w-56 md:w-80 rounded-xl text-white hover:bg-blue-500"
-              >
-                submitting...
-              </button>
-            ) : (
-              <button
-                type="submit"
-                className="bg-blue-600 p-1 mt-2 w-56 md:w-80 rounded-xl text-white hover:bg-blue-500"
-              >
-                submit
-              </button>
-            )}
+            <button
+              type="submit"
+              className="bg-blue-600 p-1 w-56 md:w-80 rounded-xl text-white hover:bg-blue-500"
+              disabled={isSending}
+            >
+              {isSending ? "Submitting..." : "Submit"}
+            </button>
           </div>
         </form>
       </div>

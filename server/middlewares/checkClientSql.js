@@ -10,8 +10,7 @@ function checkClientSql(fullName, next, ifCheckClientTrue) {
       console.error("Error fetching client:", err);
       return next(new Error());
     }
-    const id = result[0]?.id;
-    if (result.length === 0 || !id) {
+    if (result.length === 0) {
       console.error("No client found");
       return constErr(
         404,

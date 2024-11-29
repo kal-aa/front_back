@@ -1,10 +1,8 @@
 import express from "express";
 import {
-  insertAddress,
   insertClient,
   insertOrder,
   selectClient,
-  selectAddress,
   selectOrder,
   selectAll,
   updateClient,
@@ -16,17 +14,11 @@ const route = express.Router();
 //  fb/insert-client
 route.post("/insert-client", insertClient);
 
-//  fb/insert-address
-route.post("/insert-address", insertAddress);
-
 //  fb/insert-order
 route.post("/insert-order", insertOrder);
 
 //  fb/select-client
 route.get("/select-client", selectClient);
-
-//  fb/select-address
-route.get("/select-address", selectAddress);
 
 //  fb/select-order
 route.get("/select-order", selectOrder);

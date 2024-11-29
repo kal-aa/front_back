@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 import createConnection from "../reUses/createConnection.js";
 import comparePassword from "../middlewares/comparePassword.js";
 import constErr from "../middlewares/constErr.js";
@@ -13,71 +14,108 @@ const db = createConnection();
 //  INSERT INTO
 //  /fb/insert-client
 export const insertClient = (req, res, next) => {
-  const sql = "INSERT INTO clients SET ?";
-  const gender = req.body.gender || null;
-  const age = req.body.age || null;
-  if (!req.body.full_name) {
-    console.log("Please enter full_name, gender, and age for the client");
+  const { full_name, gender, age, password, email } = req.body;
+  const reqGender = gender || null;
+  const reqAge = age || null;
+  if ((!full_name, !email, !password)) {
+    console.log("Please enter full_name, email and password for the client");
     return constErr(
       400,
-      "Please enter full_name, gender, and age for the client",
+      "Please insert full_name, email and password for the client",
       next
     );
   }
-  const fullName = req.body.full_name.trim().split(" ");
+  const fullName = full_name.trim().split(" ");
   if (fullName.length !== 2) {
     return constErr(400, "Please add your full name", next);
   }
+  const clientSql = "INSERT INTO clients SET ?";
+  const addressSql = `INSERT INTO addresses SET ?;`;
 
-  const values = {
-    first_name: fullName[0],
-    last_name: fullName[1],
-    gender,
-    age,
-  };
-  db.query(sql, values, (err, result) => {
-    if (err) {
-      console.error("Error fetching client:", err);
-      return next(new Error());
-    }
-    console.log(result);
-    res.status(201).send({message: 'kal'});
-  });
-};
+  //  Check if there Email client want to add doesn't match with the ones in the database
+  function emailSqlF() {
+    const emailSql = `SELECT email FROM addresses WHERE email = ?`;
+    db.query(emailSql, [email], (err, emailResult) => {
+      if (err) {
+        console.error("Error fetcing email");
+        return next(new Error());
+      }
+      if (emailResult.length >= 1) {
+        console.error("This email already exists");
+        return constErr(409, "This email already exists", next);
+      }
 
-//  POST >>
-//  INSERT INTO
-//   /fb/insert-address
-export const insertAddress = (req, res, next) => {
-  if (!req.body.password || !req.body.email || !req.body.full_name) {
-    console.error("Please add email, password and full_name");
-    return constErr(400, "Please add email, password and full_name", next);
-  }
-  const addressSql = `INSERT INTO addresses SET email = ?, password = ?, client_id = ?;`;
-
-  const email = req.body.email;
-  const password = req.body.password;
-  const fullName = req.body.full_name.trim().split(" ");
-  if (fullName.length !== 2) {
-    console.error("Please add your full name");
-    return constErr(400, "Please provide both first name and last name", next);
+      // if the email doesn't exist in the database add it
+      clientSqlF();
+    });
   }
 
-  checkClientSql(fullName, next, (idResult) => {
-    const client_id = idResult[0]?.id;
-    hashPassword(password, next, (hash) => {
-      const hashedPassword = hash;
-      const values = [email, hashedPassword, client_id];
-      db.query(addressSql, values, (err, result) => {
-        if (err) {
-          console.error("Error fetching client:", err);
-          return next(new Error());
-        }
-        console.log(result);
-        res.status(201).send({ client_id });
+  //  Add full_name, age, and gender to the clients table
+  function clientSqlF() {
+    // if the email doesn't exist in the database add it
+    const clientValues = {
+      first_name: fullName[0],
+      last_name: fullName[1],
+      gender: reqGender,
+      age: reqAge,
+    };
+    db.query(clientSql, clientValues, (err) => {
+      if (err) {
+        console.error("Error fetching client:", err);
+        return next(new Error());
+      }
+
+      checkClientSql(fullName, next, (clientResult) => {
+        hashPasswordF(clientResult);
       });
     });
-  });
+  }
+
+  // Hash the password
+  function hashPasswordF(clientResult) {
+    hashPassword(password, next, (hashedPassword) => {
+      const addressValues = {
+        email,
+        password: hashedPassword,
+        client_id: clientResult[0].id,
+      };
+      addressSqlF(clientResult, addressValues, hashedPassword);
+    });
+  }
+
+  // Add email and password to the addresses table
+  function addressSqlF(clientResult, addressValues, hashedPassword) {
+    db.query(addressSql, addressValues, (err) => {
+      if (err) {
+        console.error("Error Posting an address:", err);
+        return constErr(500, "Erorr posting an address", next);
+      }
+
+      const clientData = {
+        ...clientResult[0],
+        password: hashedPassword,
+        email,
+      };
+
+      addressIdSqlF(email, clientData);
+    });
+  } //
+
+  // send the address_id back to the client side for better routing
+  function addressIdSqlF(email, clientData) {
+    const address_id = `SELECT address_id FROM addresses WHERE email = ?;`;
+    db.query(address_id, [email], (err, addressResult) => {
+      if (err) {
+        console.error("Error fetching address_id,:", err);
+        return next(new Error());
+      }
+
+      console.log("Client data posted:", clientData);
+      res.status(201).send({ address_id: addressResult[0].address_id });
+    });
+  }
+
+  emailSqlF();
 };
 
 //  POST >>
@@ -136,11 +174,12 @@ export const insertOrder = (req, res, next) => {
 //  SELECT *
 //  fb/select-client
 export const selectClient = (req, res, next) => {
-  if (!req.query.full_name) {
-    console.error("Please insert your full name");
-    return constErr(400, "Please insert your full name, like: John Doe", next);
+  const { password, full_name } = req.query;
+  if (!full_name || !password) {
+    console.error("Please insert your full name and Password");
+    return constErr(400, "Please insert your full name and password", next);
   }
-  const fullName = req.query.full_name.trim().split(" ");
+  const fullName = full_name.trim().split(" ");
   if (fullName.length !== 2) {
     console.log("fullname.length !== 2");
     return constErr(
@@ -151,44 +190,34 @@ export const selectClient = (req, res, next) => {
   }
 
   checkClientSql(fullName, next, (idResult) => {
-    const row = idResult[0];
-    const fullName = `${row.first_name} ${row.last_name}`;
-    const gender = row.gender || "Unset";
-    const age = row.age || "Unset";
+    const clients = idResult.map((result) => result.id);
+    const placeholders = idResult.map(() => "?").join(", ");
 
-    const newResult = { fullName, age, gender };
+    const addressesSql = `SELECT * FROM addresses  WHERE client_id in(${placeholders})`;
+    db.query(addressesSql, clients, async (err, addressResult) => {
+      if (err) {
+        console.error("Error fetching addresses:", err);
+        return next(new Error());
+      }
 
-    console.log(idResult);
-    return res.send(newResult);
-  });
-};
+      try {
+        let passwordMatch = false;
+        for (const each of addressResult) {
+          const isMatch = await bcrypt.compare(password, each.password);
+          if (isMatch) {
+            passwordMatch = true;
+            return res.send({ address_id: each.address_id });
+          }
+        }
 
-//  READ >>
-//  SELECT *
-//  fb/select-address
-export const selectAddress = (req, res, next) => {
-  const { full_name, password } = req.query;
-  if (!full_name || !password) {
-    console.error("Please insert your full name and password");
-    return constErr(400, "Please insert your full name and password", next);
-  }
-  const inputPassword = password;
-  const fullName = full_name.trim().split(" ");
-  if (fullName.length !== 2) {
-    console.error("Please add your full name");
-    return constErr(400, "Please provide both first name and last name", next);
-  }
-
-  checkClientSql(fullName, next, (idResult) => {
-    const id = idResult[0]?.id;
-    checkAddressSql(id, next, (addressResult) => {
-      const sqlPassword = addressResult[0]?.password;
-      comparePassword(inputPassword, sqlPassword, next, () => {
-        console.log("Password Match!");
-
-        console.log(addressResult);
-        res.send(addressResult);
-      });
+        if (!passwordMatch) {
+          console.error("Password doesn't match");
+          return constErr(401, "Password doesn't match", next);
+        }
+      } catch (error) {
+        console.error("Error Comparing password:", error);
+        return next(new Error());
+      }
     });
   });
 };

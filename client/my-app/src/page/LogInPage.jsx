@@ -9,24 +9,22 @@ const LogInPage = () => {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
 
-
   useEffect(() => {
     const fullName = params.get("fullName");
     const password = params.get("password");
 
     if (fullName && password) {
-      const url = `http://localhost:5000/fb/select-address?full_name=${encodeURIComponent(
+      const url = `http://localhost:5000/fb/select-client?full_name=${encodeURIComponent(
         fullName
       )}&password=${encodeURIComponent(password)}`;
       setIsSending(true);
       fetch(url)
-        .then((res) => {
+        .then(async (res) => {
           if (!res.ok) {
-            return res.json().then((errorData) => {
+            return await res.json().then((errorData) => {
               setBadResponseText(
                 errorData.error || "An unknow error occured!!"
               );
-
               setTimeout(() => {
                 setBadResponseText("");
               }, 3000);
@@ -40,7 +38,7 @@ const LogInPage = () => {
         })
         .then((data) => {
           setIsSending(false);
-          navigate(`/home/${data[0].client_id}`);
+          navigate(`/home/${data.address_id}`);
           console.log("Address fetched successfully:", data);
         })
         .catch((error) => {
