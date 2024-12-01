@@ -19,11 +19,11 @@ const Header = ({ setElipsis = true, showMiddleSection = false }) => {
   };
   return (
     <>
-      <div className="fixed bg-blue-200 top-0 left-0 right-0 h-24 flex justify-around items-center md:text-lg">
+      <div className="fixed bg-blue-200 top-0 left-0 right-0 h-24 flex justify-around items-center text-sm md:text-base font-bold">
         {/* Lef section of the header */}
         <div className="flex items-center ml-1">
           <img
-            src="../assets/cart.jpeg"
+            src="../assets/images/cart.jpeg"
             alt="cart.jpeg"
             className="sm:w-20 w-16  h-10 rounded-full"
           />
