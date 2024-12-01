@@ -30,3 +30,7 @@ body {
 .show-confirm-password {
   @apply absolute bottom-2 right-4 md:right-1
 }
+
+.header-hover {
+@apply hover:bg-blue-300 rounded-lg leading-4
+}

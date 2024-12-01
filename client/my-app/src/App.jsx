@@ -4,6 +4,11 @@ import SignUpPage from "./page/SignUpPage";
 import HomePage from "./page/HomePage";
 import LogInPage from "./page/LogInPage";
 import OrdersPage from "./page/OrdersPage";
+import AddOrdersPage from "./page/AddOrdersPage";
+import YourOrdersPage from "./page/YourOrdersPage";
+import ManageYourAccPage from "./page/ManageYourAccPage";
+import AboutUsPage from "./page/AbouUsPage";
+import ContactUsPage from "./page/ContactUsPage";
 
 const App = () => {
   return (
@@ -14,6 +19,11 @@ const App = () => {
         <Route path="/log-in" element={<LogInPage />} />
         <Route path="/home/:id" element={<HomePage />} />
         <Route path="/orders" element={<OrdersPage />} />
+        <Route path="/add-order/:id" element={<AddOrdersPage />} />
+        <Route path="/your-order/:id" element={<YourOrdersPage />} />
+        <Route path="/manage-your-acc/:id" element={<ManageYourAccPage />} />
+        <Route path="/About-us/:id" element={<AboutUsPage />} />
+        <Route path="/contact-us/:id" element={<ContactUsPage />} />
       </Routes>
     </Router>
   );
