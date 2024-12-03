@@ -1,11 +1,13 @@
 import Header from "../components/Header";
-import HomeMain from "../components/HomeMain";
+import MainLogic from "../components/MainLogic";
+import Testimonial from "../components/Testimonial";
 
 const HomePage = () => {
   return (
     <>
       <Header setElipsis={false} />
-      <HomeMain />
+      <MainLogic />
+      <Testimonial />
     </>
   );
 };

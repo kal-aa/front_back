@@ -19,7 +19,7 @@ const Header = ({ setElipsis = true, showMiddleSection = false }) => {
   };
   return (
     <>
-      <div className="fixed bg-blue-200 top-0 left-0 right-0 h-24 flex justify-around items-center text-sm md:text-base font-bold">
+      <div className="fixed bg-blue-200 top-0 left-0 right-0 h-24 flex justify-around items-center text-sm md:text-base font-bold z-10">
         {/* Lef section of the header */}
         <div className="flex items-center ml-1">
           <img
@@ -40,8 +40,8 @@ const Header = ({ setElipsis = true, showMiddleSection = false }) => {
           <div
             className={
               elipsisClicked
-                ? "space-y-1 sm:flex sm:flex-row sm:space-x-4 sm:items-center"
-                : "space-y-1 sm:flex sm:flex-row sm:space-x-4 sm:items-center hidden"
+                ? "space-y-1 sm:flex sm:flex-row sm:space-x-4 sm:items-center sm:ml-2"
+                : "space-y-1 sm:flex sm:flex-row sm:space-x-4 sm:items-center sm:ml-2 hidden"
             }
           >
             <div>
@@ -50,13 +50,13 @@ const Header = ({ setElipsis = true, showMiddleSection = false }) => {
               </NavLink>
             </div>
             <div>
-              <NavLink to={`/add-order/${id}`} className={isActive}>
-                Add order
+              <NavLink to={`/add-orders/${id}`} className={isActive}>
+                Add orders
               </NavLink>
             </div>
             <div>
-              <NavLink to={`/your-order/${id}`} className={isActive}>
-                Your order
+              <NavLink to={`/your-orders/${id}`} className={isActive}>
+                Your orders
               </NavLink>
             </div>
           </div>
@@ -64,7 +64,7 @@ const Header = ({ setElipsis = true, showMiddleSection = false }) => {
 
         {/* Middle section of the header */}
         {showMiddleSection && (
-          <div className="w-1/3 flex items-center">
+          <div className="w-1/4 flex items-center">
             <input
               ref={inputRef}
               type="text"

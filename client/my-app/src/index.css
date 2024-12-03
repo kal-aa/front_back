@@ -34,3 +34,7 @@ body {
 .header-hover {
 @apply hover:bg-blue-300 rounded-lg leading-4
 }
+
+input {
+  @apply cursor-pointer focus:cursor-text
+}

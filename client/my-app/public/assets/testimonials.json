@@ -1,0 +1,17 @@
+{
+  "testimonials": [
+    {
+      "id": 1,
+      "name": "Elon-Musk",
+      "testimony": "Innovative design meets unparalleled quality in this apparel line. This collection not only sets new standards for fashion but also embodies a spirit of daring and creativity that resonates with anyone looking to push the boundaries. Truly a pioneering approach to fashion that speaks to the dreamer and doer in all of us. — Elon Musk"
+    },{
+      "id": 2,
+      "name": "Robert-Tkiyosaki",
+      "testimony": "In a world where innovation and resilience are key to success, this apparel line stands out. It represents not just fashion but a mindset of financial intelligence and forward-thinking. Wearing this collection is like wearing the principles of rich thinking and bold living. It's about making a statement that you understand the value of quality and creativity. — Robert T. Kiyosaki"
+    },{
+      "id": 3,
+      "name": "Diogenes",
+      "testimony": "True elegance lies in simplicity and authenticity. This apparel line strips away the superfluous, leaving only the essence of craftsmanship and integrity. It challenges the conventional and celebrates the profound in the ordinary. — Diogenes"
+    }
+  ]
+}
