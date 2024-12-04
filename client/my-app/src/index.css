@@ -5,6 +5,11 @@
 body {
   font-family: playafair;
   background-color: rgb(225, 243, 252);
+  margin-top: 95px
+}
+
+.min-h-screen-adjusted { 
+  min-height: calc(100vh - 95px) 
 }
 
 @layer base {

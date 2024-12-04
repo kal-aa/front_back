@@ -1,7 +1,11 @@
 import Header from "../components/Header";
 
 const YourOrdersPage = () => {
-  return <Header showMiddleSection={true} />;
+  return (
+    <div>
+      <Header showMiddleSection={true} />
+    </div>
+  );
 };
 
 export default YourOrdersPage;

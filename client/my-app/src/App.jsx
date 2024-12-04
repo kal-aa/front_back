@@ -8,22 +8,31 @@ import YourOrdersPage from "./page/YourOrdersPage";
 import ManageYourAccPage from "./page/ManageYourAccPage";
 import AboutUsPage from "./page/AbouUsPage";
 import ContactUsPage from "./page/ContactUsPage";
+import Footer from "./components/Footer";
 
 const App = () => {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<LogOrSign />} />
-        <Route path="/sign-up" element={<SignUpPage />} />
-        <Route path="/log-in" element={<LogInPage />} />
-        <Route path="/home/:id" element={<HomePage />} />
-        <Route path="/add-orders/:id" element={<AddOrdersPage />} />
-        <Route path="/your-orders/:id" element={<YourOrdersPage />} />
-        <Route path="/manage-your-acc/:id" element={<ManageYourAccPage />} />
-        <Route path="/About-us/:id" element={<AboutUsPage />} />
-        <Route path="/contact-us/:id" element={<ContactUsPage />} />
-      </Routes>
-    </Router>
+    <div className="flex flex-col min-h-screen-adjusted">
+      <Router>
+        <div className="flex-grow">
+          <Routes>
+            <Route path="/" element={<LogOrSign />} />
+            <Route path="/sign-up" element={<SignUpPage />} />
+            <Route path="/log-in" element={<LogInPage />} />
+            <Route path="/home/:id" element={<HomePage />} />
+            <Route path="/add-orders/:id" element={<AddOrdersPage />} />
+            <Route path="/your-orders/:id" element={<YourOrdersPage />} />
+            <Route
+              path="/manage-your-acc/:id"
+              element={<ManageYourAccPage />}
+            />
+            <Route path="/About-us/:id" element={<AboutUsPage />} />
+            <Route path="/contact-us/:id" element={<ContactUsPage />} />
+          </Routes>
+        </div>
+        <Footer />
+      </Router>
+    </div>
   );
 };
 

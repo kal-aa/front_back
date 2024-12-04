@@ -17,7 +17,7 @@ const MainGenerate = ({
   };
 
   return (
-    <div className="mt-24 px-10 py-5">
+    <div className="px-10 py-5">
       <h1 className="text-x font-bold px-10 py-5 mb-10 text-center text-yellow-700 bg-stone-100 rounded-2xl md:rounded-full 
       ">
         {!isHome

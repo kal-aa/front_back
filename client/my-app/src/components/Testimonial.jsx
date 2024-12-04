@@ -27,7 +27,7 @@ const Testimonial = () => {
         {testimonies.map((testimony) => (
           <div
             key={testimony.id}
-            className="bg-black text-white p-5 rounded-2xl relative"
+            className="bg-black text-white p-5 rounded-2xl relative shadow-lg shadow-red-900 text-center"
           >
             <img
               src={`/assets/images/${testimony.name}.jpeg`}
@@ -35,7 +35,7 @@ const Testimonial = () => {
               className="w-14 h-14 rounded-full absolute -left-3 -top-3 text-blue-500"
             />
             <div
-              className={`absolute inset-0 bg-[url('/assets/images/${testimony.name}.jpeg')] bg-center bg-no-repeat filter blur-sm brightness-50 overflow-hidden`}
+              className={`absolute bg-[url("/assets/images/${testimony.name}.jpeg")] inset-0 bg-center bg-no-repeat filter blur-sm brightness-50 overflow-hidden`}
             ></div>
             <h2 className="indent-6 relative">{testimony.testimony}</h2>
           </div>
