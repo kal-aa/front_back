@@ -14,7 +14,7 @@ function checkOrderSql(id, next, ifCheckOrderTrue) {
       console.error("user trying to fetch an order with out placing one");
       return constErr(
         404,
-        "You have not placed any order yet, please add some and try again!",
+        "No order!",
         next
       );
     }

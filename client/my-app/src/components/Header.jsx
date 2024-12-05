@@ -3,18 +3,25 @@ import { FaEllipsisV, FaSearch } from "react-icons/fa";
 import { NavLink, useParams } from "react-router-dom";
 import PropTypes from "prop-types";
 
-const Header = ({ setElipsis = true, showMiddleSection = false }) => {
+const Header = ({ setElipsis = true, showMiddleSection = false, search }) => {
   const [elipsisClicked, setElipsisClicked] = useState(setElipsis);
-  const [searchValue, setSearchValue] = useState();
+  const [searchValue, setSearchValue] = useState("");
   const inputRef = useRef(null);
   const { id } = useParams();
 
   const isActive = ({ isActive }) =>
     isActive ? "header-hover bg-blue-300 py-1 px-2" : "header-hover py-1 px-2";
 
+  const handlekeyDown = (e) => {
+    if (e.key === "Enter") {
+      search(searchValue);
+    }
+  };
+
   const searchClick = () => {
     if (inputRef.current) {
       inputRef.current.focus();
+      search(searchValue);
     }
   };
   return (
@@ -71,6 +78,7 @@ const Header = ({ setElipsis = true, showMiddleSection = false }) => {
               name="search"
               id="search"
               value={searchValue}
+              onKeyDown={handlekeyDown}
               onChange={(e) => setSearchValue(e.target.value)}
               className="outline-none focus:border focus:border-red-400 w-full px-2 py-2 -mr-1 rounded-l-lg border-gray-300"
             />
@@ -115,6 +123,7 @@ const Header = ({ setElipsis = true, showMiddleSection = false }) => {
 Header.propTypes = {
   setElipsis: PropTypes.bool,
   showMiddleSection: PropTypes.bool,
+  search: PropTypes.func,
 };
 
 export default Header;

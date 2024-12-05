@@ -8,6 +8,7 @@ import {
   updateClient,
   updateAddress,
   deleteClient,
+  deleteOrder,
 } from "./controllers/rest.js";
 const route = express.Router();
 
@@ -34,5 +35,8 @@ route.put("/update-address", updateAddress);
 
 //  fb/delete-all
 route.delete("/delete-all", deleteClient);
+
+//  fb/delete-order
+route.delete("/delete-order", deleteOrder);
 
 export default route;

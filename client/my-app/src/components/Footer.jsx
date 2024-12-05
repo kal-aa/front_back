@@ -1,5 +1,6 @@
 import { FaEnvelope, FaPhone, FaTelegramPlane } from "react-icons/fa";
 import { useMatch, NavLink } from "react-router-dom";
+import { FaArrowUp } from "react-icons/fa";
 
 const Footer = () => {
   const matchHome = useMatch("/home/:id");
@@ -18,10 +19,14 @@ const Footer = () => {
     matchContactUs?.params.id ||
     "No param found";
 
+  const handleUpArrow = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <footer>
       <div className="bg-blue-300 h-[135px] mt-5 font-serif">
-        <div className="flex items-center justify-around md:py-4 text-sm font-bold md:flex-row-reverse">
+        <div className="flex items-center justify-around md:py-4 text-sm font-bold md:flex-row-reverse relative">
           <div className="flex flex-col items-center space-y-2">
             <NavLink
               to={`/manage-your-acc/${id}`}
@@ -70,6 +75,11 @@ const Footer = () => {
               </NavLink>
             </div>
           </div>
+          <FaArrowUp
+            title="^^^To the top^^^"
+            onClick={handleUpArrow}
+            className="absolute right-4 top-1 text-xl text-yellow-700 md:right-[48%]"
+          />
         </div>
         <div className="text-center font-bold md:hidden">
           © 2024 Kalab. All rights reserved.

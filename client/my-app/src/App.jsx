@@ -1,5 +1,7 @@
 import LogOrSign from "./components/LogOrSign";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import SignUpPage from "./page/SignUpPage";
 import HomePage from "./page/HomePage";
 import LogInPage from "./page/LogInPage";
@@ -12,7 +14,7 @@ import Footer from "./components/Footer";
 
 const App = () => {
   return (
-    <div className="flex flex-col min-h-screen-adjusted">
+    <div className="flex flex-col min-h-screen">
       <Router>
         <div className="flex-grow">
           <Routes>
@@ -31,6 +33,7 @@ const App = () => {
           </Routes>
         </div>
         <Footer />
+        <ToastContainer />
       </Router>
     </div>
   );

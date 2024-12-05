@@ -10,7 +10,7 @@ import checkAddressSql from "../middlewares/checkAddressSql.js";
 
 const db = createConnection();
 
-//  POST >>
+//  POST >>>
 //  INSERT INTO
 //  /fb/insert-client
 export const insertClient = (req, res, next) => {
@@ -118,59 +118,64 @@ export const insertClient = (req, res, next) => {
   emailSqlF();
 };
 
-//  POST >>
+//  POST >>>
 //  INSERT INTO
 //   /fb/insert-order
 export const insertOrder = (req, res, next) => {
-  if (
-    !req.body.full_name ||
-    !req.body.password ||
-    !req.body.order_name ||
-    !req.body.quantity
-  ) {
+  const { address_id, json_id, who, type, color, size, quantity, price } =
+    req.body;
+  if (!address_id) {
     console.error(
-      "Please insert your password, full_name, order_name, and quantity"
+      "No order_id sent from the client side with add order request"
     );
     return constErr(
       400,
-      "Please insert your password, full_name, order_name, and quantity",
+      "Sorry! we couldn't found your account please log-in again or ",
       next
     );
   }
-  const orderName = req.body.order_name;
-  const quantity = req.body.quantity;
-  const password = req.body.password;
-  const fullName = req.body.full_name.trim().split(" ");
-  if (fullName.length !== 2) {
-    console.error("add your full name");
-    return constErr(400, "Add your full name like: John Doe", next);
-  }
-  const getAddressesSql = `SELECT * FROM addresses`;
-  const orderSql = `INSERT INTO orders SET order_name = ?, quantity = ?, client_id = ?, address_id = ?`;
 
-  checkClientSql(fullName, next, (idResult) => {
-    const id = idResult[0]?.id;
-    checkAddressSql(id, next, (addressResult) => {
-      const sqlPassword = addressResult[0]?.password;
-      comparePassword(password, sqlPassword, next, () => {
-        const client_id = addressResult[0].client_id;
-        const address_id = addressResult[0].address_id;
-        const values = [orderName, quantity, client_id, address_id];
-        db.query(orderSql, values, (err, orderResult) => {
-          if (err) {
-            console.error("Error fetching client:", err);
-            return next(new Error());
-          }
+  const orderSql = `INSERT INTO orders SET ?;`;
+  const addressSql = `SELECT * FROM addresses WHERE address_id = ?`;
 
-          console.log(orderResult);
-          return res.status(201).end();
-        });
-      });
+  db.query(addressSql, [address_id], (err, addressResult) => {
+    if (err) {
+      console.error("Error Fetching data from addresses table");
+      return next(new Error());
+    }
+    if (addressResult.length === 0) {
+      console.error("User trying to add ordes with a wrong address_id", next);
+      return constErr(
+        400,
+        "Please open the website again and sign up first",
+        next
+      );
+    }
+    const client_id = addressResult[0]?.client_id;
+    const values = {
+      address_id,
+      client_id,
+      who,
+      type,
+      json_id,
+      color,
+      size,
+      price,
+      quantity,
+    };
+    db.query(orderSql, values, (err, orderResult) => {
+      if (err) {
+        console.error("Error fetching client:", err);
+        return next(new Error());
+      }
+
+      console.log(orderResult);
+      return res.status(201).end();
     });
   });
 };
 
-//  READ >>
+//  READ >>>
 //  SELECT *
 //  fb/select-client
 export const selectClient = (req, res, next) => {
@@ -226,34 +231,26 @@ export const selectClient = (req, res, next) => {
 //  SELECT *
 //  fb/select-order
 export const selectOrder = (req, res, next) => {
-  if (!req.query.full_name || !req.query.password) {
+  const { address_id } = req.query;
+  if (!address_id) {
     console.error("Add your full name and password");
     return constErr(400, "Add your full name and password", next);
   }
+  const addressSql = `SELECT * FROM addresses WHERE address_id = ?;`;
+  db.query(addressSql, [address_id], (err, addressResult) => {
+    if (err) {
+      console.error("Error Checking the address", err);
+      return next(new Error());
+    }
+    const client_id = addressResult[0]?.client_id;
+    if (!client_id) {
+      console.error("No address found");
+      return constErr(404, "No client found, please sign-up", next);
+    }
 
-  const inputPassword = req.query.password;
-  const fullName = req.query.full_name.trim().split(" ");
-  if (fullName.length !== 2) {
-    console.error("Please add your full name, like:John Doe");
-    return constErr(400, "Please provide both first name and last name", next);
-  }
-
-  // Check if the client exists at the first place
-  checkClientSql(fullName, next, (idResult) => {
-    const id = idResult[0]?.id;
-
-    checkAddressSql(id, next, (addressResult) => {
-      // Check if the user has placed an order
-      const sqlPassword = addressResult[0]?.password;
-      comparePassword(inputPassword, sqlPassword, next, () => {
-        checkOrderSql(id, next, (orderResult) => {
-          const order = orderResult[0].order_name;
-          const quantity = orderResult[0].quantity;
-          const newResult = { order, quantity };
-          console.log(orderResult);
-          return res.send(newResult);
-        });
-      });
+    checkOrderSql(client_id, next, (orderResult) => {
+      console.log(orderResult);
+      return res.send(orderResult);
     });
   });
 };
@@ -438,6 +435,40 @@ export const updateAddress = (req, res, next) => {
         });
       });
     });
+  });
+};
+
+//  DELETE >>>
+//  DELETE order FROM...
+//  fb/delete-order
+export const deleteOrder = (req, res, next) => {
+  const { order_id } = req.query;
+  if (!order_id) {
+    console.error("Client doesn't send the order_id to be deleted");
+    return constErr(
+      400,
+      "We couldn't find your account, Please sign-up/log-in again"
+    );
+  }
+
+  if (isNaN(order_id)) {
+    console.error("the address id should be number");
+    return constErr(
+      400,
+      "Oops we couldn't find your account please sing-up/log-in",
+      next
+    );
+  }
+
+  const orderSql = `DELETE FROM orders WHERE order_id = ?`;
+  db.query(orderSql, [order_id], (err, orderResult) => {
+    if (err) {
+      console.error("Error deleting order");
+      return next(new Error());
+    }
+
+    console.log("Order successfully deleted", orderResult);
+    res.status(204).end();
   });
 };
 

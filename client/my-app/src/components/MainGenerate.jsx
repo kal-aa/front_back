@@ -17,14 +17,16 @@ const MainGenerate = ({
   };
 
   return (
-    <div className="px-10 py-5">
-      <h1 className="text-x font-bold px-10 py-5 mb-10 text-center text-yellow-700 bg-stone-100 rounded-2xl md:rounded-full 
-      ">
-        {!isHome
-          ? "Order us and we'll bring it to where you are in the speed of light!"
-          : "This Website is Dedicated to Offering an Incredible E-Commerce Service for Apparel. Whether you're on the hunt for the latest trends, timeless classics, or comfortable everyday wear, our platform offers an intuitive and efficient way to discover the perfect pieces to elevate your wardrobe."}
+    <div className="px-10 py-5 mt-24">
+      <h1
+        className="text-x font-bold px-10 py-5 mb-10 text-center text-yellow-700 bg-stone-100 rounded-2xl md:rounded-full 
+      "
+      >
+        {isHome
+          ? "This Website is Dedicated to Offering an Incredible E-Commerce Service for Apparel. Whether you're on the hunt for the latest trends, timeless classics, or comfortable everyday wear, our platform offers an intuitive and efficient way to discover the perfect pieces to elevate your wardrobe."
+          : "What sets our offerings apart is the incredible variety we provide. Customers can choose from a tremendous palette of colors and a wide range of sizes to find the perfect fit for their style and needs. Whether you're looking for vibrant hues or classic shades, petite sizes or plus fits, our extensive selection ensures that there's something for everyone. We believe that personal expression is key, and our diverse options allow you to customize your purchases to reflect your unique taste. Dive into our collection and discover the endless possibilities that await! 🌈👚👖"}
       </h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 sm:-mx-7 sm:-mx gap-5 ">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 sm:-mx-7 sm:-mx gap-y-10 gap-x-5 ">
         {isPending ? (
           <div className="text-center col-span-3">
             <ClipLoader size={250} />
@@ -45,9 +47,12 @@ const MainGenerate = ({
                 />
               </a>
               <form
-                onSubmit={() =>
+                onSubmit={(e) =>
                   onSubmit(
+                    e,
                     product.id,
+                    product.for,
+                    product.type,
                     product.selectedColor,
                     product.selectedSize,
                     product.selectedQuantity,
@@ -132,7 +137,10 @@ const MainGenerate = ({
         {isHome ? (
           <div className=" self-end text-sm font-bold">
             Please head to the
-            <NavLink to={`/add-orders/${id}`} className="text-blue-800 mx-1 hover:text-blue-600">
+            <NavLink
+              to={`/add-orders/${id}`}
+              className="text-blue-800 mx-1 hover:text-blue-600"
+            >
               Add orders
             </NavLink>
             page to place orders...
