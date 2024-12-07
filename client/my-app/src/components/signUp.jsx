@@ -68,6 +68,7 @@ const SignUp = ({ toSignup }) => {
 
     toSignup(formData, setIsSending, setBadRequestText);
   };
+  
   return (
     <>
       <h1 className="text-center text-blue-500 text-4xl font-bold mt-5">
@@ -90,7 +91,7 @@ const SignUp = ({ toSignup }) => {
               onChange={handleChange}
               placeholder="Sample: John Doe"
               required
-              className="signup-input md:ml-14"
+              className="signup-input md:ml-[54px]"
             />
           </div>
           {isFullName ? (
@@ -125,7 +126,7 @@ const SignUp = ({ toSignup }) => {
               value={formData.password}
               onChange={handleChange}
               required
-              className="signup-input md:ml-14"
+              className="signup-input md:ml-[58px]"
             />
             {showPassword ? (
               <FaEyeSlash
@@ -139,7 +140,7 @@ const SignUp = ({ toSignup }) => {
             )}
           </div>
           <div className="relative">
-            <label htmlFor="confirm-password">Re-enter Password:</label>
+            <label htmlFor="confirm-password">Re-Enter Password:</label>
             <input
               type={showConfirmPassword ? "text" : "password"}
               id="confirm-password"
@@ -147,7 +148,7 @@ const SignUp = ({ toSignup }) => {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              className="signup-input md:"
+              className="signup-input"
             />
             {showConfirmPassword ? (
               <FaEyeSlash

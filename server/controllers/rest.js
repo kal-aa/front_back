@@ -3,7 +3,6 @@ import createConnection from "../reUses/createConnection.js";
 import comparePassword from "../middlewares/comparePassword.js";
 import constErr from "../middlewares/constErr.js";
 import hashPassword from "../middlewares/hashPassword.js";
-import deleteWhetherOrNot from "../middlewares/deleteWhetherOrNot.js";
 import checkClientSql from "../middlewares/checkClientSql.js";
 import checkOrderSql from "../middlewares/checkOrderSql.js";
 import checkAddressSql from "../middlewares/checkAddressSql.js";
@@ -31,8 +30,9 @@ export const insertClient = (req, res, next) => {
   }
   const clientSql = "INSERT INTO clients SET ?";
   const addressSql = `INSERT INTO addresses SET ?;`;
+  const address_id = `SELECT address_id FROM addresses WHERE email = ?;`;
 
-  //  Check if there Email client want to add doesn't match with the ones in the database
+  //  Check if the Email already exists
   function emailSqlF() {
     const emailSql = `SELECT email FROM addresses WHERE email = ?`;
     db.query(emailSql, [email], (err, emailResult) => {
@@ -52,7 +52,6 @@ export const insertClient = (req, res, next) => {
 
   //  Add full_name, age, and gender to the clients table
   function clientSqlF() {
-    // if the email doesn't exist in the database add it
     const clientValues = {
       first_name: fullName[0],
       last_name: fullName[1],
@@ -103,15 +102,14 @@ export const insertClient = (req, res, next) => {
 
   // send the address_id back to the client side for better routing
   function addressIdSqlF(email, clientData) {
-    const address_id = `SELECT address_id FROM addresses WHERE email = ?;`;
     db.query(address_id, [email], (err, addressResult) => {
       if (err) {
         console.error("Error fetching address_id,:", err);
         return next(new Error());
       }
-
-      console.log("Client data posted:", clientData);
-      res.status(201).send({ address_id: addressResult[0].address_id });
+      const address_id = addressResult[0].address_id;
+      console.log(`Address_id:${address_id} signed-up successfully`);
+      res.status(201).send({ address_id: address_id });
     });
   }
 
@@ -138,44 +136,40 @@ export const insertOrder = (req, res, next) => {
   const orderSql = `INSERT INTO orders SET ?;`;
   const addressSql = `SELECT * FROM addresses WHERE address_id = ?`;
 
-  db.query(addressSql, [address_id], (err, addressResult) => {
-    if (err) {
-      console.error("Error Fetching data from addresses table");
-      return next(new Error());
-    }
-    if (addressResult.length === 0) {
-      console.error("User trying to add ordes with a wrong address_id", next);
-      return constErr(
-        400,
-        "Please open the website again and sign up first",
-        next
-      );
-    }
-    const client_id = addressResult[0]?.client_id;
-    const values = {
-      address_id,
-      client_id,
-      who,
-      type,
-      json_id,
-      color,
-      size,
-      price,
-      quantity,
-    };
+  function addressSqlF() {
+    checkAddressSql(address_id, next, (addressResult) => {
+      const client_id = addressResult[0]?.client_id;
+      const values = {
+        address_id,
+        client_id,
+        who,
+        type,
+        json_id,
+        color,
+        size,
+        price,
+        quantity,
+      };
+      orderSqlF(values);
+    });
+  }
+
+  function orderSqlF(values) {
     db.query(orderSql, values, (err, orderResult) => {
       if (err) {
-        console.error("Error fetching client:", err);
+        console.error("Error Posting order:", err);
         return next(new Error());
       }
 
-      console.log(orderResult);
+      console.log("Order Added successfully!");
       return res.status(201).end();
     });
-  });
+  }
+
+  addressSqlF();
 };
 
-//  READ >>>
+//  READ >>> for log-in
 //  SELECT *
 //  fb/select-client
 export const selectClient = (req, res, next) => {
@@ -194,11 +188,7 @@ export const selectClient = (req, res, next) => {
     );
   }
 
-  checkClientSql(fullName, next, (idResult) => {
-    const clients = idResult.map((result) => result.id);
-    const placeholders = idResult.map(() => "?").join(", ");
-
-    const addressesSql = `SELECT * FROM addresses  WHERE client_id in(${placeholders})`;
+  const addressSqlF = (addressesSql, clients) => {
     db.query(addressesSql, clients, async (err, addressResult) => {
       if (err) {
         console.error("Error fetching addresses:", err);
@@ -211,6 +201,7 @@ export const selectClient = (req, res, next) => {
           const isMatch = await bcrypt.compare(password, each.password);
           if (isMatch) {
             passwordMatch = true;
+            console.log(`Address_id:${each.address_id} logged-in successfully`);
             return res.send({ address_id: each.address_id });
           }
         }
@@ -224,17 +215,28 @@ export const selectClient = (req, res, next) => {
         return next(new Error());
       }
     });
+  };
+
+  checkClientSql(fullName, next, (idResult) => {
+    const clients = idResult.map((result) => result.id);
+    const placeholders = idResult.map(() => "?").join(", ");
+    const addressesSql = `SELECT * FROM addresses  WHERE client_id in(${placeholders})`;
+    addressSqlF(addressesSql, clients);
   });
 };
 
-//  READ >>
+//  READ >>>
 //  SELECT *
 //  fb/select-order
 export const selectOrder = (req, res, next) => {
   const { address_id } = req.query;
   if (!address_id) {
-    console.error("Add your full name and password");
-    return constErr(400, "Add your full name and password", next);
+    console.error("no address_id found to fetch orders");
+    return constErr(
+      400,
+      "Oops! we couldn't find your account, please log-in/sign-up again",
+      next
+    );
   }
   const addressSql = `SELECT * FROM addresses WHERE address_id = ?;`;
   db.query(addressSql, [address_id], (err, addressResult) => {
@@ -249,103 +251,138 @@ export const selectOrder = (req, res, next) => {
     }
 
     checkOrderSql(client_id, next, (orderResult) => {
-      console.log(orderResult);
+      console.log("Order(s) selected successfully!");
       return res.send(orderResult);
     });
   });
 };
 
-//  READ >>
-//  SELECT *
-//  fb/select-all
-export const selectAll = (req, res, next) => {
-  if (!req.query.full_name || !req.query.password) {
-    console.error("no full_name and password added");
-    return constErr(400, "Please add your full name and password", next);
+//  READ >>>  ensure the password is correct in managing account's page
+//  SELECT password FROM ...
+//  fb/manage-account-password/:id
+export const manageAccountPasswod = (req, res, next) => {
+  const address_id = req.params.id;
+  const { password } = req.query;
+  const inputPassword = password;
+  if (!inputPassword || !address_id) {
+    console.error("No address_id and/or password to manage account");
+    return constErr(400, "Please log-in/sign-up and try agin", next);
   }
 
-  const inputPassword = req.query.password;
-  const fullName = req.query.full_name.trim().split(" ");
-  if (fullName.length !== 2) {
-    console.error("full name length !== 2");
+  const addressSql = `SELECT password FROM addresses WHERE address_id = ?;`;
+  db.query(addressSql, [address_id], (err, addressResult) => {
+    if (err) {
+      console.error("Error fetching password", err);
+      return next(new Error());
+    }
+
+    if (addressResult.length === 0) {
+      console.error("No client found with the given address_id");
+      return constErr(400, "Oops no data found please sign-up first", next);
+    }
+
+    const sqlPassword = addressResult[0]?.password;
+    comparePassword(inputPassword, sqlPassword, next, (hashedPassword) => {
+      res.status(201).end();
+    });
+  });
+};
+
+//  READ >>> to fill the form in managing account's page
+//  SELECT *
+//  fb/select-to-manage/:id
+export const selectToManage = (req, res, next) => {
+  const address_id = req.params.id;
+  const { password } = req.query;
+  if (!address_id) {
+    console.error(
+      "Client didn't include the address_id inorder to manage account"
+    );
     return constErr(
       400,
-      "Please insert both your first_name and last_name",
+      "Oops we couldn find your data please log-in/sign-up again",
       next
     );
   }
-  const orderSql = `SELECT * FROM orders WHERE client_id = ?;`;
-  const addressSql = `SELECT * FROM addresses WHERE client_id = ?;`;
 
-  // Check if the client has an address
-  function addressSqlF(idResult) {
-    const id = idResult[0]?.id;
-    db.query(addressSql, [id], (err, addressResult) => {
+  const addressSql = `SELECT * FROM addresses WHERE address_id = ?;`;
+  const clientSql = `SELECT * FROM clients WHERE id = ?`;
+
+  function addressSqlF() {
+    db.query(addressSql, [address_id], (err, addressResult) => {
       if (err) {
-        console.error("Error fetching data:", err);
+        console.error("Error fetchind address", err);
         return next(new Error());
       }
       if (addressResult.length === 0) {
-        console.error("No address found, returned only the client");
-        // As the address doesn't exist we should return only the client
-        return res.send(idResult[0]);
+        console.error("No data found with the given address_id");
+        return constErr(
+          400,
+          "Oops we couldn't find your data please log-in/sign-up again",
+          next
+        );
       }
 
       const sqlPassword = addressResult[0]?.password;
-      comparePassword(inputPassword, sqlPassword, next, () => {
-        checkOrderF(id, addressResult, idResult);
+      comparePassword(password, sqlPassword, next, () => {
+        const client_id = addressResult[0]?.client_id;
+        clientSqlF(client_id, addressResult);
       });
     });
   }
 
-  // Check if an order exists
-  function checkOrderF(id, addressResult, idResult) {
-    db.query(orderSql, [id], (err, orderResult) => {
+  function clientSqlF(client_id, addressResult) {
+    db.query(clientSql, [client_id], (err, clientResult) => {
       if (err) {
-        console.error("Error fetching data:", err);
+        console.error("Error fetchind client", err);
         return next(new Error());
       }
-      if (orderResult.length === 0) {
-        console.error("No order found and returned address and client");
-        //  since the order doesn't exist we should return the address and the client to the user
-        return res.send([idResult[0], addressResult[0]]);
-      }
-
-      // Since we know all the three rows exist get them
-      const idRow = idResult[0];
-      const addressRow = addressResult[0];
-      const orderRow = orderResult[0];
-
-      console.log("Data from all the three tables served to the client");
-      return res.send([idRow, addressRow, orderRow]);
+      const client = clientResult[0];
+      const address = addressResult[0];
+      const data = {
+        full_name: client.first_name + " " + client.last_name,
+        gender: client.gender,
+        age: client.age,
+        email: address.email,
+        password: password,
+      };
+      console.log("Data selected and set up in the form element");
+      res.send(data);
     });
   }
 
-  // Check if the client exists by calling the checkClientSql middleware
-  checkClientSql(fullName, next, (idResult) => {
-    addressSqlF(idResult);
-  });
+  addressSqlF();
 };
 
-//  UPDATE
-//  UPDATE clients SET...
-//  fb/update-client
-export const updateClient = (req, res, next) => {
-  /* for the frontend add first fetch data from the selectClient and fill the form with it, making it ready to update */
+//  UPDATE >>>
+//  UPDATE ... SET...
+//  fb/manage-account-update/:id
+export const manageAccountUpdate = (req, res, next) => {
+  const address_id = req.params.id;
+  const { full_name, email, password, new_gender, new_age } = req.body;
 
-  if (!req.body.newFull_name || !req.body.prevFull_name) {
-    console.error("PrevFull_name and newFull_name not filled");
+  if (!address_id) {
+    console.error("Couldn't find the address_id to update client data");
     return constErr(
       400,
-      "Please add your previous full name and new full name",
+      "Couldn't find your data, please log-in/sign-up again",
       next
     );
   }
-  const prevFullName = req.body.prevFull_name.trim().split(" ");
-  const age = req.body.new_age || null;
-  const gender = req.body.new_gender || null;
-  const newFullName = req.body.newFull_name.trim().split(" ");
-  if (newFullName.length !== 2 || prevFullName.length !== 2) {
+
+  if (!full_name || !email || !password) {
+    console.error("Please insert the new full name, email, and password");
+    return constErr(
+      400,
+      "Please insert the new full name, email, and password",
+      next
+    );
+  }
+
+  const fullName = full_name.trim().split(" ");
+  const age = new_age || null;
+  const gender = new_gender || null;
+  if (fullName.length !== 2) {
     console.error("Please enter your full name");
     return constErr(200, "Enter your full name like: John Doe", next);
   }
@@ -354,88 +391,76 @@ export const updateClient = (req, res, next) => {
     return constErr(400, "Age must be a number", next);
   }
 
-  const sql = `UPDATE clients SET first_name = ?, last_name = ?, gender = ?, age = ? WHERE first_name = ? AND last_name = ?`;
-  const updateValues = [
-    newFullName[0],
-    newFullName[1],
-    gender,
-    age,
-    prevFullName[0],
-    prevFullName[1],
-  ];
+  const checkEmailSql = `SELECT email FROM addresses WHERE email = ?;`;
+  const checkAddressSql = `SELECT * FROM addresses WHERE address_id = ?;`;
+  const updateAddressSql = `UPDATE addresses SET email = ?, password = ? WHERE address_id = ?;`;
+  const updateClientSql = `UPDATE clients SET first_name = ?, last_name = ?, age = ?, gender = ? WHERE id = ?;`;
 
-  function checkSqlF() {
-    db.query(sql, updateValues, (err, result) => {
+  function checkIfEmailExists() {
+    db.query(checkEmailSql, [email], (err, emailSqlResult) => {
       if (err) {
-        console.error("Error fetching client:", err);
+        console.error("Error checking similar email", err);
         return next(new Error());
       }
 
-      console.log("Updated successfully");
-      return res.status(204).end();
-    });
-  }
-
-  checkClientSql(prevFullName, next, () => {
-    checkSqlF();
-  });
-};
-
-//  UPDATE
-//  UPDATE addresses SET...
-//  fb/update-address
-export const updateAddress = (req, res, next) => {
-  if (
-    !req.body.email ||
-    !req.body.new_password ||
-    !req.body.prev_password ||
-    !req.body.full_name
-  ) {
-    console.error("Add full_name, prev_password, new_password, new_email");
-    return constErr(
-      400,
-      "Add full_name, prev_password, new_password, email",
-      next
-    );
-  }
-  const fullName = req.body.full_name.trim().split(" ");
-  if (fullName.length !== 2) {
-    console.error("Please insert your full name");
-    return constErr(400, "Please insert your first_name and last_name", next);
-  }
-  const inputPassword = req.body.prev_password;
-  const newPassword = req.body.new_password;
-  const newEmail = req.body.email;
-  const addressSql = `UPDATE addresses SET email = ?, password = ? WHERE client_id = ?;`;
-
-  function updateAddress(values) {
-    db.query(addressSql, values, (err, result) => {
-      if (err) {
-        console.error("Error fetching client:", err);
-        return next(new Error());
+      if (emailSqlResult.length > 0) {
+        console.error("Email already Exists");
+        return constErr(409, "This Email address Already exists!", next);
       }
 
-      console.log("Address updated! for the user:", fullName[0], fullName[1]);
-      return res.status(204).end();
+      checkAddressF();
     });
   }
 
-  //  check if the client exists
-  checkClientSql(fullName, next, (idResult) => {
-    //  check if the address exists for the client
-    const id = idResult[0]?.id;
-    checkAddressSql(id, next, (checkResult) => {
-      const sqlPassword = checkResult[0]?.password;
-      comparePassword(inputPassword, sqlPassword, next, () => {
-        // Generate a new hashed password for the new email
-        hashPassword(newPassword, next, (hashedPassword) => {
-          // finally update the address with the new email and hashed password
-          const values = [newEmail, hashedPassword, id];
-          updateAddress(values);
-        });
+  function checkAddressF() {
+    db.query(checkAddressSql, [address_id], (err, checkAddressResult) => {
+      if (err) {
+        console.error("Error checking the address to be updated", err);
+        return next(new Error());
+      }
+      if (checkAddressResult.length === 0) {
+        console.error("No data found to be updated with the given address_id");
+        return constErr(
+          404,
+          "No data found to be updated, please log-in/sign-up again",
+          next
+        );
+      }
+
+      hashPassword(password, next, (hashPassword) => {
+        const addressValue = [email, hashPassword, address_id];
+        updateAddressF(addressValue, checkAddressResult);
       });
     });
-  });
+  }
+
+  function updateAddressF(addressValue, checkAddressResult) {
+    db.query(updateAddressSql, addressValue, (err, addressResult) => {
+      if (err) {
+        console.log(addressResult);
+        console.error("Error updating address", err);
+        return next(new Error());
+      }
+
+      const client_id = checkAddressResult[0]?.client_id;
+      const clientValue = [fullName[0], fullName[1], age, gender, client_id];
+      updateClientF(clientValue);
+    });
+  }
+
+  function updateClientF(clientValue) {
+    db.query(updateClientSql, clientValue, (err) => {
+      if (err) {
+        console.error("Error updating client data", err);
+        return next(new Error());
+      }
+
+      console.log("Client data updated successfully!");
+      res.status(201).end();
+    });
+  }
+
+  checkIfEmailExists();
 };
 
 //  DELETE >>>
@@ -463,63 +488,68 @@ export const deleteOrder = (req, res, next) => {
   const orderSql = `DELETE FROM orders WHERE order_id = ?`;
   db.query(orderSql, [order_id], (err, orderResult) => {
     if (err) {
-      console.error("Error deleting order");
+      console.error("Error deleting order", err);
       return next(new Error());
     }
 
-    console.log("Order successfully deleted", orderResult);
+    console.log("Order deleted successfully!");
     res.status(204).end();
   });
 };
 
-//  DELETE
-//  DELETE client FROM...
-//  fb/delete-all
-export const deleteClient = (req, res, next) => {
-  if (!req.query.password || !req.query.full_name) {
-    console.error("Add your password and full name");
-    return constErr(400, "Please insert password and full name", next);
+//  DELETE >>>
+//  DELETE FROM ...
+//  fb/manage-account-delete/:id
+export const manageAccountDelete = (req, res, next) => {
+  const address_id = req.params.id;
+  if (!address_id) {
+    console.error("No address_id found to delete an account");
+    return constErr(
+      400,
+      "Oops we couldn't find your data refresh or open the website again",
+      next
+    );
   }
-  const inputPassword = req.query.password;
-  const fullName = req.query.full_name.trim().split(" ");
-  if (fullName.length !== 2) {
-    console.error("fullName.length !== 2");
-    return constErr(400, "Add your full name like: John Doe", next);
-  }
-  const clientSql = `SELECT id FROM clients WHERE first_name = ? AND  last_name = ?`;
-  const orderSql = `SELECT * FROM orders WHERE client_id = ?;`;
-  const deleteOrderSql = `DELETE FROM orders WHERE client_id = ?;`;
 
-  checkClientSql(fullName, next, (idResult) => {
-    const id = idResult[0]?.id;
-    checkOrderF(id);
+  const deleteClientSql = `DELETE FROM clients WHERE id = ?;`;
+  const deleteAddressSql = `DELETE FROM addresses WHERE address_id = ?;`;
+  const deleteOrdersSql = `DELETE FROM orders WHERE address_id = ?;`;
+
+  function deleteClientF(client_id) {
+    db.query(deleteClientSql, [client_id], (err) => {
+      if (err) {
+        console.error("Error deleting address", err);
+        return next(new Error());
+      }
+
+      console.log("Account deleted successfully!");
+      res.status(201).end();
+    });
+  }
+
+  function deleteAddressF(client_id) {
+    db.query(deleteAddressSql, [address_id], (err) => {
+      if (err) {
+        console.error("Error deleting address", err);
+        return next(new Error());
+      }
+
+      deleteClientF(client_id);
+    });
+  }
+
+  function deleteOrderF(client_id) {
+    db.query(deleteOrdersSql, [address_id], (err) => {
+      if (err) {
+        console.error("Error deleting order(s)", err);
+        return next(new Error());
+      }
+
+      deleteAddressF(client_id);
+    });
+  }
+  checkAddressSql(address_id, next, (addressResult) => {
+    const client_id = addressResult[0]?.client_id;
+    deleteOrderF(client_id);
   });
-
-  //  check if the client has an order if it has delete all, if not delete address and client
-  function checkOrderF(id) {
-    db.query(orderSql, [id], (err, orderResult) => {
-      if (err) {
-        console.error("Error fetching client:", err);
-        return next(new Error());
-      }
-      if (orderResult.length !== 0) {
-        //  delete all
-        return deleteOrderF(id);
-      }
-      // delete address and client if they exist
-      deleteWhetherOrNot(id, inputPassword, res, next);
-    });
-  }
-
-  function deleteOrderF(id) {
-    db.query(deleteOrderSql, [id], (err, deleteOrderResult) => {
-      if (err) {
-        console.error("Error fetching client:", err);
-        return next(new Error());
-      }
-      console.log("Order deleted:", deleteOrderResult);
-      // Call deleteWhetherOrNot()
-      deleteWhetherOrNot(id, inputPassword, res, next);
-    });
-  }
 };

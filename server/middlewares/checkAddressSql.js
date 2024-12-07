@@ -2,21 +2,21 @@ import createConnection from "../reUses/createConnection.js";
 import constErr from "./constErr.js";
 
 const db = createConnection();
-const addressSql = `SElECT * FROM addresses WHERE client_id = ?`;
+const addressSql = `SElECT * FROM addresses WHERE address_id = ?`;
 
 function checkAddressSql(id, next, ifCheckAddressTrue) {
   db.query(addressSql, [id], (err, addressResult) => {
     if (err) {
-      console.error("Error fetching client:", err);
+      console.error("Error fetching address:", err);
       return next(new Error());
     }
     if (addressResult.length === 0) {
       console.error(
-        "user trying to fetch an order for a client which doesn't have an address"
+        "No data found with the given address_id"
       );
       return constErr(
         404,
-        "Please fill the Address form and then place an order first to see your orders",
+        "Please open the website again and log-in/sign-up first",
         next
       );
     }

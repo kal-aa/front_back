@@ -4,11 +4,11 @@ import {
   insertOrder,
   selectClient,
   selectOrder,
-  selectAll,
-  updateClient,
-  updateAddress,
-  deleteClient,
   deleteOrder,
+  manageAccountPasswod,
+  selectToManage,
+  manageAccountDelete,
+  manageAccountUpdate,
 } from "./controllers/rest.js";
 const route = express.Router();
 
@@ -24,19 +24,19 @@ route.get("/select-client", selectClient);
 //  fb/select-order
 route.get("/select-order", selectOrder);
 
-//  fb/select-all
-route.get("/select-all", selectAll);
+//  fb/select-to-manage
+route.get("/select-to-manage/:id", selectToManage);
 
-//  fb/update-client
-route.put("/update-client", updateClient);
+//  fb/manage-acc-password
+route.get("/manage-account-password/:id", manageAccountPasswod);
 
-//  fb/update-address
-route.put("/update-address", updateAddress);
-
-//  fb/delete-all
-route.delete("/delete-all", deleteClient);
+//  fb/manage-account-update
+route.put("/manage-account-update/:id", manageAccountUpdate);
 
 //  fb/delete-order
 route.delete("/delete-order", deleteOrder);
+
+//  fb/manage-account-delete
+route.delete("/manage-account-delete/:id", manageAccountDelete);
 
 export default route;

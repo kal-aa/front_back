@@ -19,9 +19,9 @@ const LogInPage = () => {
       )}&password=${encodeURIComponent(password)}`;
       setIsSending(true);
       fetch(url)
-        .then(async (res) => {
+        .then((res) => {
           if (!res.ok) {
-            return await res.json().then((errorData) => {
+            return res.json().then((errorData) => {
               setBadResponseText(
                 errorData.error || "An unknow error occured!!"
               );
