@@ -1,0 +1,185 @@
+{
+  "products": [
+     {
+      "id": 1,
+      "price": 35,
+      "for": "men",
+      "type": "jacket",
+      "color": {
+        "black": "black",
+        "electricBlue": "electric-blue",
+        "fieryRed": "fiery-red",
+        "limeGreen": "lime-green",
+        "sunsetOrange": "sunset-orange"
+      }
+    },{
+      "id": 2,
+      "price": 17,
+      "for": "women",
+      "type": "pants",
+      "color": {
+        "black": "black",
+        "electricBlue": "electric-blue",
+        "fieryRed": "fiery-red",
+        "limeGreen": "lime-green",
+        "sunsetOrange": "sunset-orange"
+      }
+    },{
+      "id": 3,
+      "price": 13,
+      "for": "children",
+      "type": "shirt",
+      "color": {
+        "black": "black",
+        "electricBlue": "electric-blue",
+        "fieryRed": "fiery-red",
+        "limeGreen": "lime-green",
+        "sunsetOrange": "sunset-orange"
+      }
+    },{
+      "id": 4,
+      "price": 34,
+      "for": "women",
+      "type": "jacket",
+      "color": {
+        "black": "black",
+        "electricBlue": "electric-blue",
+        "fieryRed": "fiery-red",
+        "limeGreen": "lime-green",
+        "sunsetOrange": "sunset-orange"
+      }
+    },{
+      "id": 5,
+      "price": 20,
+      "for": "men",
+      "type": "pants",
+      "color": {
+        "black": "black",
+        "electricBlue": "electric-blue",
+        "fieryRed": "fiery-red",
+        "limeGreen": "lime-green",
+        "sunsetOrange": "sunset-orange"
+      }
+    },{
+      "id": 6,
+      "price": 17,
+      "for": "children",
+      "type": "joggers",
+      "color": {
+        "black": "black",
+        "electricBlue": "electric-blue",
+        "fieryRed": "fiery-red",
+        "limeGreen": "lime-green",
+        "sunsetOrange": "sunset-orange"
+      }
+    },{
+      "id": 7,
+      "price": 15,
+      "for": "men",
+      "type": "shirt",
+      "color": {
+        "black": "black",
+        "electricBlue": "electric-blue",
+        "fieryRed": "fiery-red",
+        "limeGreen": "lime-green",
+        "sunsetOrange": "sunset-orange"
+      }
+    },{
+      "id": 8,
+      "price": 31,
+      "for": "women",
+      "type": "hoodie",
+      "color": {
+        "black": "black",
+        "electricBlue": "electric-blue",
+        "fieryRed": "fiery-red",
+        "limeGreen": "lime-green",
+        "sunsetOrange": "sunset-orange"
+      }
+    },{
+      "id": 9,
+      "price": 19,
+      "for": "children",
+      "type": "pants",
+      "color": {
+        "black": "black",
+        "electricBlue": "electric-blue",
+        "fieryRed": "fiery-red",
+        "limeGreen": "lime-green",
+        "sunsetOrange": "sunset-orange"
+      }
+    },{
+      "id": 10,
+      "price": 32,
+      "for": "men",
+      "type": "joggers",
+      "color": {
+        "black": "black",
+        "electricBlue": "electric-blue",
+        "fieryRed": "fiery-red",
+        "limeGreen": "lime-green",
+        "sunsetOrange": "sunset-orange"
+      }
+    },{
+      "id": 11,
+      "price": 16,
+      "for": "women",
+      "type": "joggers",
+      "color": {
+        "black": "black",
+        "electricBlue": "electric-blue",
+        "fieryRed": "fiery-red",
+        "limeGreen": "lime-green",
+        "sunsetOrange": "sunset-orange"
+      }
+    },{
+      "id": 12,
+      "price": 24,
+      "for": "children",
+      "type": "hoodie",
+      "color": {
+        "black": "black",
+        "electricBlue": "electric-blue",
+        "fieryRed": "fiery-red",
+        "limeGreen": "lime-green",
+        "sunsetOrange": "sunset-orange"
+      }
+    },{
+      "id": 13,
+      "price": 12,
+      "for": "women",
+      "type": "shirt",
+      "color": {
+        "black": "black",
+        "electricBlue": "electric-blue",
+        "fieryRed": "fiery-red",
+        "limeGreen": "lime-green",
+        "sunsetOrange": "sunset-orange"
+      }
+    },{
+      "id": 14,
+      "price": 29,
+      "for": "children",
+      "type": "jacket",
+      "color": {
+        "black": "black",
+        "electricBlue": "electric-blue",
+        "fieryRed": "fiery-red",
+        "limeGreen": "lime-green",
+        "sunsetOrange": "sunset-orange"
+      }
+    },{
+      "id": 15,
+      "price": 28,
+      "for": "men",
+      "type": "hoodie",
+      "color": {
+        "black": "black",
+        "electricBlue": "electric-blue",
+        "fieryRed": "fiery-red",
+        "limeGreen": "lime-green",
+        "sunsetOrange": "sunset-orange"
+      }
+    }
+  ]
+}
