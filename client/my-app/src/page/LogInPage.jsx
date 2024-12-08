@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import LogIn from "../components/LogIN";
-
+import LogIn from "../components/LogIn";
 const LogInPage = () => {
   const [isSending, setIsSending] = useState(false);
   const [badresponseText, setBadResponseText] = useState("");
@@ -12,7 +11,6 @@ const LogInPage = () => {
   useEffect(() => {
     const fullName = params.get("fullName");
     const password = params.get("password");
-
     if (fullName && password) {
       const url = `http://localhost:5000/fb/select-client?full_name=${encodeURIComponent(
         fullName
@@ -33,7 +31,7 @@ const LogInPage = () => {
               );
             });
           }
-
+          
           return res.json();
         })
         .then((data) => {

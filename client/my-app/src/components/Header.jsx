@@ -26,7 +26,7 @@ const Header = ({ setElipsis = true, showMiddleSection = false, search }) => {
   };
   return (
     <>
-      <div className="fixed bg-blue-200 top-0 left-0 right-0 h-24 flex justify-around items-center text-sm md:text-base font-bold z-20">
+      <header className="fixed bg-blue-200 top-0 left-0 right-0 h-24 flex justify-around items-center text-sm md:text-base font-bold z-20">
         {/* Lef section of the header */}
         <div className="flex items-center ml-1">
           <img
@@ -115,7 +115,7 @@ const Header = ({ setElipsis = true, showMiddleSection = false, search }) => {
             </NavLink>
           </div>
         </div>
-      </div>
+      </header>
     </>
   );
 };

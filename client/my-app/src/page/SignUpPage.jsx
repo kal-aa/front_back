@@ -12,7 +12,6 @@ const SignUpPage = () => {
       password: formData.password,
     };
     const clientUrl = "http://localhost:5000/fb/insert-client";
-
     fetch(clientUrl, {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -30,6 +29,7 @@ const SignUpPage = () => {
             );
           });
         }
+
         return res.json();
       })
       .then((data) => {

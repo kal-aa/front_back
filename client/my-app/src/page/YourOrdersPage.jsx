@@ -37,7 +37,6 @@ const YourOrdersPage = () => {
     e.preventDefault();
 
     const url = `http://localhost:5000/fb/delete-order?order_id=${order_id}`;
-
     fetch(url, {
       method: "DELETE",
     })
@@ -45,7 +44,7 @@ const YourOrdersPage = () => {
         if (!res.ok) {
           throw new Error("Error deleting order");
         }
-
+        
         setOrders(orders.filter((order) => order.order_id !== order_id));
         return res.json();
       })

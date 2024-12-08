@@ -16,8 +16,6 @@ const ManageYourAcc = ({
     setReEnteredPassword,
     isPasssworMatched,
     isPasswordConfirmed,
-    passwordEye,
-    reEntersPasswordEye,
   } = passwordProps;
 
   const {
@@ -29,11 +27,30 @@ const ManageYourAcc = ({
     handlePasswordSubmit,
     handleManageSubmit,
   } = manageProps;
+  
   const [showPassword, setShowPassword] = useState(false);
   const [showReEnteredPassword, setShowReEnteredPassword] = useState(false);
   const faStyle = "absolute top-[74px] right-14 md:top-[51px]";
   const btnStyle =
     "bg-blue-600 p-1 w-56 md:w-44 rounded-xl text-white hover:bg-blue-500";
+
+    const passwordEye = () => {
+    if (!showPassword) {
+      setShowPassword(true);
+      setTimeout(() => {
+        setShowPassword(false);
+      }, 3000);
+    }
+  };
+
+  const reEntersPasswordEye = () => {
+    if (!showReEnteredPassword) {
+      setShowReEnteredPassword(true);
+      setTimeout(() => {
+        setShowReEnteredPassword(false);
+      }, 3000);
+    }
+  };
 
   return (
     <div className="flex items-center justify-center mt-24 relative">
@@ -235,8 +252,6 @@ ManageYourAcc.propTypes = {
     setReEnteredPassword: PropTypes.func.isRequired,
     isPasssworMatched: PropTypes.bool.isRequired,
     isPasswordConfirmed: PropTypes.bool.isRequired,
-    passwordEye: PropTypes.func.isRequired,
-    reEntersPasswordEye: PropTypes.func.isRequired,
   }).isRequired,
   manageProps: PropTypes.shape({
     isUpdating: PropTypes.bool.isRequired,

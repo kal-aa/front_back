@@ -18,7 +18,7 @@ const Footer = () => {
     matchAboutUs?.params.id ||
     matchContactUs?.params.id ||
     "No param found";
-
+    
   const handleUpArrow = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };

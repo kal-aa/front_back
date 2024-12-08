@@ -58,14 +58,12 @@ const SignUp = ({ toSignup }) => {
       return;
     }
     setIsFullName(true);
-
     if (formData.password !== confirmPassword) {
       setPasswordConfirmed(false);
       return;
     }
     setPasswordConfirmed(true);
     setIsSending(true);
-
     toSignup(formData, setIsSending, setBadRequestText);
   };
   

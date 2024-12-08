@@ -15,8 +15,6 @@ const ManageYourAccPage = () => {
   });
   const [password, setPassword] = useState(""); // the mini authentication's password
   const [reEnteredPassword, setReEnteredPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showReEnteredPassword, setShowReEnteredPassword] = useState(false);
   const [isFullName, setIsFullName] = useState(true);
   const [isPasswordConfirmed, setIsPasswordConfirmed] = useState(false); // The mini authentication's confirm
   const [isPasssworMatched, setIsPasswordMatched] = useState(true);
@@ -25,7 +23,6 @@ const ManageYourAccPage = () => {
   const [badManageRequest, setBadManageRequest] = useState("");
   const [badPasswordRequest, setBadPasswordRequest] = useState("");
   const navigate = useNavigate();
-
   const fullNameRef = useRef(null);
   const { id } = useParams();
   const address_id = id;
@@ -38,31 +35,12 @@ const ManageYourAccPage = () => {
     });
   };
 
-  const passwordEye = () => {
-    if (!showPassword) {
-      setShowPassword(true);
-      setTimeout(() => {
-        setShowPassword(false);
-      }, 3000);
-    }
-  };
-
-  const reEntersPasswordEye = () => {
-    if (!showReEnteredPassword) {
-      setShowReEnteredPassword(true);
-      setTimeout(() => {
-        setShowReEnteredPassword(false);
-      }, 3000);
-    }
-  };
-
   const handlePasswordSubmit = (e) => {
     e.preventDefault();
 
     const url = `http://localhost:5000/fb/manage-account-password/${address_id}?password=${encodeURIComponent(
       password
     )}`;
-
     fetch(url)
       .then((res) => {
         if (!res.ok) {
@@ -74,7 +52,6 @@ const ManageYourAccPage = () => {
             throw new Error("Error Checking password");
           });
         }
-
         setIsPasswordConfirmed(true);
         console.log("Password checked successfully");
       })
@@ -87,17 +64,14 @@ const ManageYourAccPage = () => {
     if (!isPasswordConfirmed) {
       return;
     }
-
     const fillUrl = `http://localhost:5000/fb/select-to-manage/${address_id}?password=${encodeURIComponent(
       password
     )}`;
-
     fetch(fillUrl)
       .then((res) => {
         if (!res.ok) {
           throw new Error("Error fetching client data");
         }
-
         return res.json();
       })
       .then((data) => {
@@ -226,8 +200,6 @@ const ManageYourAccPage = () => {
           setReEnteredPassword,
           isPasssworMatched,
           isPasswordConfirmed,
-          passwordEye,
-          reEntersPasswordEye,
         }}
         manageProps={{
           isUpdating,

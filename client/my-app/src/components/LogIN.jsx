@@ -44,7 +44,6 @@ const LogIn = ({
       setIsFullName(false);
       return;
     }
-
     handleSetParams({
       fullName: formData.full_name,
       password: formData.password,

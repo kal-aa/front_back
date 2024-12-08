@@ -41,6 +41,7 @@ const MainLogic = ({ isHome = true, isSearch, searchValue }) => {
 
   const onSubmit = (e, json_id, who, type, color, size, quantity, price) => {
     e.preventDefault();
+
     const url = "http://localhost:5000/fb/insert-order";
     const order = {
       address_id: id,
@@ -52,7 +53,6 @@ const MainLogic = ({ isHome = true, isSearch, searchValue }) => {
       quantity,
       price,
     };
-
     fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -68,8 +68,8 @@ const MainLogic = ({ isHome = true, isSearch, searchValue }) => {
         toast.success("Order added successfully");
       })
       .catch((error) => {
-        console.error("Error with posting order", error);
         toast.error("An error occured");
+        console.error("Error with posting order", error);
       });
   };
 
@@ -85,7 +85,6 @@ const MainLogic = ({ isHome = true, isSearch, searchValue }) => {
           selectedSize: "MD",
           selectedQuantity: 1,
         }));
-
         let search;
         !isSearch
           ? ""
@@ -100,7 +99,7 @@ const MainLogic = ({ isHome = true, isSearch, searchValue }) => {
                 return true;
               }
             }));
-
+        // trying to implement the search input on the header
         isHome
           ? setProducts(productsWithDefaults.slice(0, 2))
           : isSearch

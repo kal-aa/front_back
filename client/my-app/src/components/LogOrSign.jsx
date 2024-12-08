@@ -7,7 +7,7 @@ const LogOrSign = () => {
       <div className="absolute inset-0 bg-[url('../assets/images/images.jpeg')] bg-cover bg-center filter blur-sm brightness-75"></div>
       <div className="relative text-center bg-stone-200 px-3 py-5 md:px-5 md:py-8 rounded-2xl">
         <h1 className="text-2xl font-bold">
-          Welcome to <span className="text-blue-700">My</span>/
+          Welcome to <span className="text-blue-700">Our</span>/
           <span className="text-pink-700">Your</span> Website
           <FaSmileWink className="inline ml-1 mb-1" />
         </h1>

@@ -124,7 +124,7 @@ const MainGenerate = ({
                   ) : (
                     <button
                       type="submit"
-                      className="bg-white mb-1 w-1/2 rounded-xl"
+                      className="bg-white hover:bg-slate-200 mb-1 w-1/2 rounded-xl"
                     >
                       add
                     </button>
