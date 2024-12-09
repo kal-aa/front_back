@@ -34,9 +34,7 @@ const Testimonial = () => {
               alt={`${testimony.name}`}
               className="w-14 h-14 rounded-full absolute -left-3 -top-3 text-blue-500"
             />
-            <div
-              className={`absolute bg-[url("/assets/images/${testimony.name}.jpeg")] inset-0 bg-center bg-no-repeat filter blur-sm brightness-50 overflow-hidden`}
-            ></div>
+            
             <h2 className="indent-6 relative">{testimony.testimony}</h2>
           </div>
         ))}
